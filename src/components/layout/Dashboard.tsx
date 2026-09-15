@@ -79,12 +79,12 @@ function Dashboard({
                   SIMULATION DATA
                 </span>
 
-                <h2>Input Metrics</h2>
+                <h2>Mission Metrics</h2>
               </div>
 
               <span className="section-heading__status">
                 {simulationActive
-                  ? 'Simulation armed'
+                  ? 'Simulation active'
                   : 'Waiting for simulation'}
               </span>
             </div>
@@ -92,7 +92,9 @@ function Dashboard({
             <div className="metrics-grid">
               <MetricCard
                 label="INITIAL POWER"
-                value={inputs.initialPower.toLocaleString()}
+                value={
+                  inputs.initialPower.toLocaleString()
+                }
                 unit="W"
                 description="Transmitted signal power"
                 icon={
@@ -105,7 +107,9 @@ function Dashboard({
 
               <MetricCard
                 label="DISTANCE"
-                value={inputs.finalDistance.toLocaleString()}
+                value={
+                  inputs.finalDistance.toLocaleString()
+                }
                 unit="km"
                 description="Satellite-to-station range"
                 icon={
@@ -119,9 +123,11 @@ function Dashboard({
 
               <MetricCard
                 label="COEFFICIENT"
-                value={inputs.attenuationCoefficient.toFixed(
-                  2,
-                )}
+                value={
+                  inputs.attenuationCoefficient.toFixed(
+                    2,
+                  )
+                }
                 description="Homogeneous EDO parameter k"
                 icon={
                   <Gauge
@@ -134,7 +140,9 @@ function Dashboard({
 
               <MetricCard
                 label="NUMERICAL STEP"
-                value={inputs.numericalStep.toLocaleString()}
+                value={
+                  inputs.numericalStep.toLocaleString()
+                }
                 unit="km"
                 description="RK4 integration interval"
                 icon={
@@ -147,7 +155,7 @@ function Dashboard({
             </div>
           </section>
 
-          <AnalysisPreview />
+          <AnalysisPreview inputs={inputs} />
         </div>
       </main>
     </div>

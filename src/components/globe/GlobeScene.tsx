@@ -1,193 +1,323 @@
 import {
-  Play,
-  RotateCcw,
-  SlidersHorizontal,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+
+import Globe, {
+  type GlobeMethods,
+} from 'react-globe.gl';
+
+import {
+  RadioTower,
+  Satellite,
 } from 'lucide-react';
 
-import type {
-  SimulationField,
-  SimulationInputs,
-} from '../../types/simulation';
+import type { SimulationInputs } from '../../types/simulation';
 
-interface ControlPanelProps {
+interface GlobeSceneProps {
   inputs: SimulationInputs;
-
-  onChange: (
-    field: SimulationField,
-    value: number,
-  ) => void;
-
-  onSimulate: () => void;
-  onReset: () => void;
+  simulationActive: boolean;
 }
 
-interface NumberFieldProps {
+interface GlobePoint {
+  lat: number;
+  lng: number;
+  altitude: number;
+  radius: number;
+  color: string;
   label: string;
-  symbol: string;
-  unit?: string;
-  value: number;
-  step?: number;
-  min?: number;
-
-  onChange: (value: number) => void;
 }
 
-function NumberField({
-  label,
-  symbol,
-  unit,
-  value,
-  step = 1,
-  min = 0,
-  onChange,
-}: NumberFieldProps) {
-  return (
-    <label className="control-field">
-      <div className="control-field__header">
-        <span>{label}</span>
-
-        <span className="control-field__symbol">
-          {symbol}
-        </span>
-      </div>
-
-      <div className="control-field__input-wrapper">
-        <input
-          className="control-field__input"
-          type="number"
-          min={min}
-          step={step}
-          value={value}
-          onChange={(event) =>
-            onChange(Number(event.target.value))
-          }
-        />
-
-        {unit && (
-          <span className="control-field__unit">
-            {unit}
-          </span>
-        )}
-      </div>
-    </label>
-  );
+interface GlobeArc {
+  startLat: number;
+  startLng: number;
+  endLat: number;
+  endLng: number;
+  color: string[];
 }
 
-function ControlPanel({
+const EARTH_RADIUS_KM = 6371;
+
+function GlobeScene({
   inputs,
-  onChange,
-  onSimulate,
-  onReset,
-}: ControlPanelProps) {
+  simulationActive,
+}: GlobeSceneProps) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const globeRef = useRef<GlobeMethods | undefined>(undefined);
+
+  const [dimensions, setDimensions] = useState({
+    width: 700,
+    height: 480,
+  });
+
+  const satelliteAltitude = useMemo(() => {
+    const normalized =
+      inputs.finalDistance / EARTH_RADIUS_KM;
+
+    return Math.min(
+      0.48,
+      Math.max(0.08, normalized * 0.22),
+    );
+  }, [inputs.finalDistance]);
+
+  const satellitePosition = useMemo(
+    () => ({
+      lat: 12,
+      lng: -42,
+    }),
+    [],
+  );
+
+  const stationPosition = useMemo(
+    () => ({
+      lat: -2.53,
+      lng: -44.30,
+    }),
+    [],
+  );
+
+  const points = useMemo<GlobePoint[]>(
+    () => [
+      {
+        lat: satellitePosition.lat,
+        lng: satellitePosition.lng,
+        altitude: satelliteAltitude,
+        radius: 0.48,
+        color: simulationActive
+          ? '#6BE7EA'
+          : '#71858D',
+        label: 'SAT-2048',
+      },
+      {
+        lat: stationPosition.lat,
+        lng: stationPosition.lng,
+        altitude: 0.012,
+        radius: 0.34,
+        color: '#F0C56E',
+        label: 'Ground Station',
+      },
+    ],
+    [
+      satelliteAltitude,
+      satellitePosition,
+      stationPosition,
+      simulationActive,
+    ],
+  );
+
+  const arcs = useMemo<GlobeArc[]>(
+    () => [
+      {
+        startLat: satellitePosition.lat,
+        startLng: satellitePosition.lng,
+        endLat: stationPosition.lat,
+        endLng: stationPosition.lng,
+        color: simulationActive
+          ? ['#6BE7EA', '#66A7FF']
+          : ['#344A52', '#263A42'],
+      },
+    ],
+    [
+      satellitePosition,
+      stationPosition,
+      simulationActive,
+    ],
+  );
+
+  useEffect(() => {
+    if (!containerRef.current) {
+      return;
+    }
+
+    const updateDimensions = () => {
+      if (!containerRef.current) {
+        return;
+      }
+
+      setDimensions({
+        width: containerRef.current.clientWidth,
+        height: containerRef.current.clientHeight,
+      });
+    };
+
+    updateDimensions();
+
+    const observer = new ResizeObserver(updateDimensions);
+
+    observer.observe(containerRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    const controls = globeRef.current?.controls();
+
+    if (!controls) {
+      return;
+    }
+
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.32;
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.minDistance = 190;
+    controls.maxDistance = 420;
+
+    globeRef.current?.pointOfView(
+      {
+        lat: 8,
+        lng: -38,
+        altitude: 2.15,
+      },
+      900,
+    );
+  }, []);
+
   return (
-    <aside className="panel control-panel">
-      <div className="panel__heading">
+    <section className="globe-panel">
+      <div className="globe-panel__topbar">
         <div>
           <span className="panel__eyebrow">
-            MISSION INPUT
+            ORBITAL MONITOR
           </span>
 
-          <h2>Simulation Parameters</h2>
+          <h2>Satellite Link Visualization</h2>
         </div>
 
-        <SlidersHorizontal
-          size={18}
-          strokeWidth={1.5}
-        />
+        <div className="globe-panel__live">
+          <span
+            className={
+              simulationActive
+                ? 'status-dot status-dot--cyan'
+                : 'status-dot'
+            }
+          />
+
+          {simulationActive ? 'LIVE' : 'STANDBY'}
+        </div>
       </div>
 
-      <div className="control-panel__fields">
-        <NumberField
-          label="Initial power"
-          symbol="P₀"
-          unit="W"
-          value={inputs.initialPower}
-          min={0.1}
-          step={1}
-          onChange={(value) =>
-            onChange('initialPower', value)
+      <div
+        ref={containerRef}
+        className="globe-viewport"
+      >
+        <Globe
+          ref={globeRef}
+          width={dimensions.width}
+          height={dimensions.height}
+          backgroundColor="rgba(0,0,0,0)"
+          globeImageUrl="https://unpkg.com/three-globe/example/img/earth-night.jpg"
+          bumpImageUrl="https://unpkg.com/three-globe/example/img/earth-topology.png"
+          showAtmosphere
+          atmosphereColor="#71DDE8"
+          atmosphereAltitude={0.16}
+          pointsData={points}
+          pointLat="lat"
+          pointLng="lng"
+          pointAltitude="altitude"
+          pointRadius="radius"
+          pointColor="color"
+          pointLabel={(point) => {
+            const item = point as GlobePoint;
+
+            return `
+              <div style="
+                background: rgba(5, 16, 21, .94);
+                border: 1px solid rgba(107, 231, 234, .25);
+                padding: 8px 10px;
+                color: #dcebed;
+                font-size: 11px;
+                letter-spacing: .05em;
+              ">
+                ${item.label}
+              </div>
+            `;
+          }}
+          arcsData={arcs}
+          arcStartLat="startLat"
+          arcStartLng="startLng"
+          arcEndLat="endLat"
+          arcEndLng="endLng"
+          arcColor="color"
+          arcAltitude={0.28}
+          arcStroke={simulationActive ? 0.7 : 0.35}
+          arcDashLength={0.32}
+          arcDashGap={0.08}
+          arcDashAnimateTime={
+            simulationActive ? 1700 : 0
           }
         />
 
-        <NumberField
-          label="Reference distance"
-          symbol="r₀"
-          unit="km"
-          value={inputs.referenceDistance}
-          min={1}
-          step={10}
-          onChange={(value) =>
-            onChange('referenceDistance', value)
-          }
-        />
+        <div className="globe-hud globe-hud--satellite">
+          <div className="globe-hud__icon">
+            <Satellite size={18} />
+          </div>
 
-        <NumberField
-          label="Final distance"
-          symbol="r"
-          unit="km"
-          value={inputs.finalDistance}
-          min={1}
-          step={100}
-          onChange={(value) =>
-            onChange('finalDistance', value)
-          }
-        />
+          <div>
+            <span>SAT-2048</span>
 
-        <NumberField
-          label="Attenuation coefficient"
-          symbol="k"
-          value={inputs.attenuationCoefficient}
-          min={0.1}
-          step={0.1}
-          onChange={(value) =>
-            onChange(
-              'attenuationCoefficient',
-              value,
-            )
-          }
-        />
+            <strong>
+              {inputs.finalDistance.toLocaleString()}
+              {' '}
+              km
+            </strong>
+          </div>
+        </div>
 
-        <NumberField
-          label="Numerical step"
-          symbol="Δr"
-          unit="km"
-          value={inputs.numericalStep}
-          min={1}
-          step={1}
-          onChange={(value) =>
-            onChange('numericalStep', value)
-          }
-        />
+        <div className="globe-hud globe-hud--station">
+          <div className="globe-hud__icon globe-hud__icon--station">
+            <RadioTower size={18} />
+          </div>
+
+          <div>
+            <span>GROUND STATION</span>
+            <strong>São Luís · MA</strong>
+          </div>
+        </div>
+
+        <div className="globe-distance">
+          <span>LINK DISTANCE</span>
+
+          <strong>
+            {inputs.finalDistance.toLocaleString()}
+            {' '}
+            km
+          </strong>
+        </div>
+
+        <div className="globe-scale">
+          <span>01</span>
+          <div />
+          <span>ORBITAL VIEW</span>
+        </div>
       </div>
 
-      <div className="control-panel__actions">
-        <button
-          className="button button--primary"
-          type="button"
-          onClick={onSimulate}
-        >
-          <Play size={15} fill="currentColor" />
+      <div className="globe-panel__footer">
+        <div>
+          <span className="legend-dot legend-dot--satellite" />
+          SATELLITE
+        </div>
 
-          Run simulation
-        </button>
+        <div>
+          <span className="legend-dot legend-dot--station" />
+          GROUND STATION
+        </div>
 
-        <button
-          className="button button--ghost"
-          type="button"
-          onClick={onReset}
-          title="Reset parameters"
-        >
-          <RotateCcw size={16} />
-        </button>
+        <div>
+          <span className="legend-line" />
+          SIGNAL PATH
+        </div>
+
+        <div className="globe-panel__interaction">
+          DRAG TO ROTATE · SCROLL TO ZOOM
+        </div>
       </div>
-
-      <div className="control-panel__footer">
-        <span className="status-dot status-dot--cyan" />
-
-        MODEL READY
-      </div>
-    </aside>
+    </section>
   );
 }
 
-export default ControlPanel;
+export default GlobeScene;
