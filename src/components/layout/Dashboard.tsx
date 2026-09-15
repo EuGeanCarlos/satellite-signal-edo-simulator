@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import {
+  useMemo,
+  useState,
+} from 'react';
 
 import {
   Activity,
-  Gauge,
   Radio,
-  Ruler,
+  Sigma,
+  TrendingDown,
 } from 'lucide-react';
 
 import AnalysisPreview from '../charts/AnalysisPreview';
@@ -14,9 +17,19 @@ import MetricCard from '../simulation/MetricCard';
 import SatelliteTelemetry from '../simulation/SatelliteTelemetry';
 import Header from './Header';
 
+import {
+  attenuationPercent,
+  generateAnalyticalSolution,
+} from '../../lib/ode';
+
+import {
+  solveRK4,
+} from '../../lib/rk4';
+
 import type {
   SimulationField,
   SimulationInputs,
+  SimulationResult,
 } from '../../types/simulation';
 
 interface DashboardProps {
@@ -30,13 +43,88 @@ interface DashboardProps {
   onReset: () => void;
 }
 
+function calculateSimulation(
+  inputs: SimulationInputs,
+): SimulationResult {
+  const analyticalPoints =
+    generateAnalyticalSolution(inputs);
+
+  const numericalPoints =
+    solveRK4(inputs);
+
+  const analyticalFinal =
+    analyticalPoints[
+      analyticalPoints.length - 1
+    ];
+
+  const numericalFinal =
+    numericalPoints[
+      numericalPoints.length - 1
+    ];
+
+  const analyticalPower =
+    analyticalFinal?.power ?? 0;
+
+  const numericalPower =
+    numericalFinal?.power ?? 0;
+
+  const derivative =
+    analyticalFinal?.derivative ?? 0;
+
+  const absoluteError =
+    Math.abs(
+      analyticalPower -
+      numericalPower,
+    );
+
+  const relativeErrorPercent =
+    analyticalPower !== 0
+      ? (
+          absoluteError /
+          Math.abs(
+            analyticalPower,
+          )
+        ) * 100
+      : 0;
+
+  return {
+    analyticalPoints,
+    numericalPoints,
+
+    analyticalPower,
+    numericalPower,
+
+    attenuationPercent:
+      attenuationPercent(
+        inputs.initialPower,
+        analyticalPower,
+      ),
+
+    derivative,
+
+    absoluteError,
+    relativeErrorPercent,
+  };
+}
+
 function Dashboard({
   inputs,
   onInputChange,
   onReset,
 }: DashboardProps) {
-  const [simulationActive, setSimulationActive] =
-    useState(false);
+  const [
+    simulationActive,
+    setSimulationActive,
+  ] = useState(false);
+
+  const simulation =
+    useMemo(
+      () =>
+        calculateSimulation(
+          inputs,
+        ),
+      [inputs],
+    );
 
   function handleSimulate() {
     setSimulationActive(true);
@@ -44,6 +132,7 @@ function Dashboard({
 
   function handleReset() {
     setSimulationActive(false);
+
     onReset();
   }
 
@@ -56,18 +145,24 @@ function Dashboard({
           <ControlPanel
             inputs={inputs}
             onChange={onInputChange}
-            onSimulate={handleSimulate}
+            onSimulate={
+              handleSimulate
+            }
             onReset={handleReset}
           />
 
           <GlobeScene
             inputs={inputs}
-            simulationActive={simulationActive}
+            simulationActive={
+              simulationActive
+            }
           />
 
           <SatelliteTelemetry
             inputs={inputs}
-            simulationActive={simulationActive}
+            simulationActive={
+              simulationActive
+            }
           />
         </div>
 
@@ -76,86 +171,119 @@ function Dashboard({
             <div className="section-heading">
               <div>
                 <span className="panel__eyebrow">
-                  SIMULATION DATA
+                  SIMULATION OUTPUT
                 </span>
 
-                <h2>Mission Metrics</h2>
+                <h2>
+                  Mathematical Results
+                </h2>
               </div>
 
               <span className="section-heading__status">
                 {simulationActive
                   ? 'Simulation active'
-                  : 'Waiting for simulation'}
+                  : 'Model preview'}
               </span>
             </div>
 
             <div className="metrics-grid">
               <MetricCard
-                label="INITIAL POWER"
+                label="RECEIVED POWER"
                 value={
-                  inputs.initialPower.toLocaleString()
+                  simulation
+                    .analyticalPower
+                    .toFixed(4)
                 }
                 unit="W"
-                description="Transmitted signal power"
+                description="Analytical solution P(r)"
                 icon={
                   <Radio
                     size={17}
-                    strokeWidth={1.6}
+                    strokeWidth={
+                      1.6
+                    }
                   />
                 }
               />
 
               <MetricCard
-                label="DISTANCE"
+                label="ATTENUATION"
                 value={
-                  inputs.finalDistance.toLocaleString()
+                  simulation
+                    .attenuationPercent
+                    .toFixed(2)
                 }
-                unit="km"
-                description="Satellite-to-station range"
+                unit="%"
+                description="Signal power reduction"
                 icon={
-                  <Ruler
+                  <TrendingDown
                     size={17}
-                    strokeWidth={1.6}
-                  />
-                }
-                accent="blue"
-              />
-
-              <MetricCard
-                label="COEFFICIENT"
-                value={
-                  inputs.attenuationCoefficient.toFixed(
-                    2,
-                  )
-                }
-                description="Homogeneous EDO parameter k"
-                icon={
-                  <Gauge
-                    size={17}
-                    strokeWidth={1.6}
+                    strokeWidth={
+                      1.6
+                    }
                   />
                 }
                 accent="amber"
               />
 
               <MetricCard
-                label="NUMERICAL STEP"
+                label="dP / dr"
                 value={
-                  inputs.numericalStep.toLocaleString()
+                  simulation
+                    .derivative
+                    .toExponential(
+                      3,
+                    )
                 }
-                unit="km"
-                description="RK4 integration interval"
+                unit="W/km"
+                description="Instantaneous signal variation"
                 icon={
                   <Activity
                     size={17}
-                    strokeWidth={1.6}
+                    strokeWidth={
+                      1.6
+                    }
+                  />
+                }
+                accent="blue"
+              />
+
+              <MetricCard
+                label="RK4 ERROR"
+                value={
+                  simulation
+                    .relativeErrorPercent
+                    .toExponential(
+                      2,
+                    )
+                }
+                unit="%"
+                description="Numerical × analytical error"
+                icon={
+                  <Sigma
+                    size={17}
+                    strokeWidth={
+                      1.6
+                    }
                   />
                 }
               />
             </div>
           </section>
 
-          <AnalysisPreview inputs={inputs} />
+          <AnalysisPreview
+            analyticalPoints={
+              simulation
+                .analyticalPoints
+            }
+            numericalPoints={
+              simulation
+                .numericalPoints
+            }
+            initialPower={
+              inputs.initialPower
+            }
+          />
         </div>
       </main>
     </div>

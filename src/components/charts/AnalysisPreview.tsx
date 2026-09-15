@@ -1,5 +1,3 @@
-import { useMemo } from 'react';
-
 import Plot from 'react-plotly.js';
 
 import {
@@ -7,99 +5,58 @@ import {
   MousePointer2,
 } from 'lucide-react';
 
-import type { SimulationInputs } from '../../types/simulation';
+import type {
+  SimulationPoint,
+} from '../../types/simulation';
 
 interface AnalysisPreviewProps {
-  inputs: SimulationInputs;
+  analyticalPoints: SimulationPoint[];
+  numericalPoints: SimulationPoint[];
+  initialPower: number;
 }
 
-interface PhasePoint {
-  distance: number;
-  power: number;
-  derivative: number;
-}
-
-function AnalysisPreview({
-  inputs,
-}: AnalysisPreviewProps) {
-  const points = useMemo<PhasePoint[]>(() => {
-    const {
-      initialPower,
-      referenceDistance,
-      finalDistance,
-      attenuationCoefficient,
-    } = inputs;
-
-    const safeReference = Math.max(
-      referenceDistance,
-      0.001,
-    );
-
-    const safeFinal = Math.max(
-      finalDistance,
-      safeReference,
-    );
-
-    const pointCount = 90;
-
-    return Array.from(
-      {
-        length: pointCount,
-      },
-      (_, index) => {
-        const progress =
-          index / (pointCount - 1);
-
-        const distance =
-          safeReference +
-          (safeFinal - safeReference) * progress;
-
-        const power =
-          initialPower *
-          Math.pow(
-            safeReference / distance,
-            attenuationCoefficient,
-          );
-
-        const derivative =
-          -attenuationCoefficient *
-          (power / distance);
-
-        return {
-          distance,
-          power,
-          derivative,
-        };
-      },
-    );
-  }, [inputs]);
-
-  const x = points.map(
-    (point) => point.distance,
-  );
-
-  const y = points.map(
-    (point) => point.power,
-  );
-
-  const z = points.map(
-    (point) => point.derivative,
-  );
-
-  const hoverText = points.map((point) => {
+function buildHoverText(
+  points: SimulationPoint[],
+  initialPower: number,
+  method: string,
+): string[] {
+  return points.map((point) => {
     const attenuation =
-      inputs.initialPower > 0
-        ? (1 - point.power / inputs.initialPower) *
-          100
+      initialPower > 0
+        ? (
+            1 -
+            point.power / initialPower
+          ) * 100
         : 0;
 
     return [
-      `<b>Distance:</b> ${point.distance.toFixed(1)} km`,
-      `<b>Power:</b> ${point.power.toFixed(4)} W`,
-      `<b>dP/dr:</b> ${point.derivative.toExponential(4)} W/km`,
-      `<b>Attenuation:</b> ${attenuation.toFixed(2)}%`,
+      `<b>${method}</b>`,
+      `<b>Distance:</b> ${point.distance.toFixed(2)} km`,
+      `<b>Power:</b> ${point.power.toFixed(6)} W`,
+      `<b>dP/dr:</b> ${point.derivative.toExponential(5)} W/km`,
+      `<b>Attenuation:</b> ${attenuation.toFixed(3)} %`,
     ].join('<br>');
   });
+}
+
+function AnalysisPreview({
+  analyticalPoints,
+  numericalPoints,
+  initialPower,
+}: AnalysisPreviewProps) {
+  const analyticalHover =
+    buildHoverText(
+      analyticalPoints,
+      initialPower,
+      'Analytical solution',
+    );
+
+  const numericalHover =
+    buildHoverText(
+      numericalPoints,
+      initialPower,
+      'RK4 numerical solution',
+    );
 
   return (
     <section className="analysis-panel">
@@ -109,11 +66,14 @@ function AnalysisPreview({
             EDO ANALYSIS
           </span>
 
-          <h2>Interactive 3D Phase Space</h2>
+          <h2>
+            Interactive 3D Phase Space
+          </h2>
         </div>
 
         <div className="analysis-panel__mode">
           <Box size={15} />
+
           r · P(r) · dP/dr
         </div>
       </div>
@@ -123,28 +83,82 @@ function AnalysisPreview({
           data={[
             {
               type: 'scatter3d',
-              mode: 'lines+markers',
+
+              mode: 'lines',
+
               name: 'Analytical',
-              x,
-              y,
-              z,
-              text: hoverText,
+
+              x: analyticalPoints.map(
+                (point) =>
+                  point.distance,
+              ),
+
+              y: analyticalPoints.map(
+                (point) =>
+                  point.power,
+              ),
+
+              z: analyticalPoints.map(
+                (point) =>
+                  point.derivative,
+              ),
+
+              text: analyticalHover,
+
               hoverinfo: 'text',
+
               line: {
                 color: '#68E4E7',
-                width: 6,
+                width: 7,
               },
+            },
+
+            {
+              type: 'scatter3d',
+
+              mode: 'lines+markers',
+
+              name: 'RK4',
+
+              x: numericalPoints.map(
+                (point) =>
+                  point.distance,
+              ),
+
+              y: numericalPoints.map(
+                (point) =>
+                  point.power,
+              ),
+
+              z: numericalPoints.map(
+                (point) =>
+                  point.derivative,
+              ),
+
+              text: numericalHover,
+
+              hoverinfo: 'text',
+
+              line: {
+                color: '#5587E8',
+                width: 4,
+              },
+
               marker: {
-                color: '#9CF3F4',
-                size: 2.8,
-                opacity: 0.82,
+                color: '#7EA4F4',
+                size: 2.6,
+                opacity: 0.78,
               },
             },
           ]}
           layout={{
             autosize: true,
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0)',
+
+            paper_bgcolor:
+              'rgba(0,0,0,0)',
+
+            plot_bgcolor:
+              'rgba(0,0,0,0)',
 
             margin: {
               l: 0,
@@ -157,7 +171,10 @@ function AnalysisPreview({
 
             hoverlabel: {
               bgcolor: '#071419',
-              bordercolor: '#31545D',
+
+              bordercolor:
+                '#31545D',
+
               font: {
                 color: '#E5F1F3',
                 size: 11,
@@ -165,7 +182,8 @@ function AnalysisPreview({
             },
 
             scene: {
-              bgcolor: 'rgba(0,0,0,0)',
+              bgcolor:
+                'rgba(0,0,0,0)',
 
               camera: {
                 eye: {
@@ -177,7 +195,9 @@ function AnalysisPreview({
 
               xaxis: {
                 title: {
-                  text: 'Distance r (km)',
+                  text:
+                    'Distance r (km)',
+
                   font: {
                     color: '#82969D',
                     size: 10,
@@ -185,17 +205,24 @@ function AnalysisPreview({
                 },
 
                 color: '#6E838A',
-                gridcolor: '#183038',
-                zerolinecolor: '#28434B',
+
+                gridcolor:
+                  '#183038',
+
+                zerolinecolor:
+                  '#28434B',
 
                 backgroundcolor:
                   'rgba(5,17,22,.18)',
+
                 showbackground: true,
               },
 
               yaxis: {
                 title: {
-                  text: 'Power P(r) (W)',
+                  text:
+                    'Power P(r) (W)',
+
                   font: {
                     color: '#82969D',
                     size: 10,
@@ -203,17 +230,23 @@ function AnalysisPreview({
                 },
 
                 color: '#6E838A',
-                gridcolor: '#183038',
-                zerolinecolor: '#28434B',
+
+                gridcolor:
+                  '#183038',
+
+                zerolinecolor:
+                  '#28434B',
 
                 backgroundcolor:
                   'rgba(5,17,22,.18)',
+
                 showbackground: true,
               },
 
               zaxis: {
                 title: {
                   text: 'dP/dr',
+
                   font: {
                     color: '#82969D',
                     size: 10,
@@ -221,11 +254,16 @@ function AnalysisPreview({
                 },
 
                 color: '#6E838A',
-                gridcolor: '#183038',
-                zerolinecolor: '#28434B',
+
+                gridcolor:
+                  '#183038',
+
+                zerolinecolor:
+                  '#28434B',
 
                 backgroundcolor:
                   'rgba(5,17,22,.18)',
+
                 showbackground: true,
               },
             },
@@ -256,13 +294,26 @@ function AnalysisPreview({
         <div>
           <span className="analysis-legend analysis-legend--analytical" />
 
-          ANALYTICAL SOLUTION
+          ANALYTICAL
+        </div>
+
+        <div>
+          <span
+            className="analysis-legend"
+            style={{
+              background:
+                '#5587E8',
+            }}
+          />
+
+          RK4
         </div>
 
         <div>
           <span className="analysis-axis-key">
             X
           </span>
+
           Distance
         </div>
 
@@ -270,6 +321,7 @@ function AnalysisPreview({
           <span className="analysis-axis-key">
             Y
           </span>
+
           Power
         </div>
 
@@ -277,6 +329,7 @@ function AnalysisPreview({
           <span className="analysis-axis-key">
             Z
           </span>
+
           Derivative
         </div>
       </div>
