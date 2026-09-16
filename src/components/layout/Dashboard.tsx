@@ -64,6 +64,9 @@ interface DashboardProps {
     () => void;
 }
 
+const ISS_IMAGE_PATH =
+  `${import.meta.env.BASE_URL}iss.jpg`;
+
 function calculateSimulation(
   inputs:
     SimulationInputs,
@@ -312,11 +315,104 @@ function Dashboard({
                 />
               </div>
 
-              <div className="dock-object__visual">
-                <Satellite
-                  size={58}
-                  strokeWidth={0.85}
+              <div
+                className="dock-object__visual"
+                style={{
+                  position:
+                    'relative',
+
+                  overflow:
+                    'hidden',
+                }}
+              >
+                <img
+                  src={
+                    ISS_IMAGE_PATH
+                  }
+                  alt="International Space Station"
+                  style={{
+                    position:
+                      'absolute',
+
+                    inset:
+                      0,
+
+                    width:
+                      '100%',
+
+                    height:
+                      '100%',
+
+                    objectFit:
+                      'cover',
+
+                    objectPosition:
+                      'center',
+
+                    opacity:
+                      0.78,
+                  }}
                 />
+
+                <div
+                  aria-hidden="true"
+                  style={{
+                    position:
+                      'absolute',
+
+                    inset:
+                      0,
+
+                    background:
+                      'linear-gradient(180deg, rgba(5, 18, 23, 0.08) 0%, rgba(5, 18, 23, 0.18) 42%, rgba(5, 18, 23, 0.72) 100%)',
+
+                    pointerEvents:
+                      'none',
+                  }}
+                />
+
+                <div
+                  style={{
+                    position:
+                      'absolute',
+
+                    left:
+                      '12px',
+
+                    bottom:
+                      '10px',
+
+                    zIndex:
+                      2,
+
+                    display:
+                      'flex',
+
+                    alignItems:
+                      'center',
+
+                    gap:
+                      '6px',
+
+                    color:
+                      '#dbe9eb',
+
+                    fontSize:
+                      '6px',
+
+                    letterSpacing:
+                      '0.14em',
+
+                    textTransform:
+                      'uppercase',
+                  }}
+                >
+                  <span
+                    className="status-dot status-dot--cyan"
+                  />
+
+                  NASA ISS
+                </div>
               </div>
 
               <div className="dock-object__stats">
