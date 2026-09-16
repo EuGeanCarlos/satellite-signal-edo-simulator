@@ -1,13 +1,31 @@
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
+import {
+  StrictMode,
+} from 'react';
 
-import App from './App.tsx';
+import {
+  createRoot,
+} from 'react-dom/client';
+
+import App
+  from './App.tsx';
 
 import './index.css';
+import './App.css';
 import './visual-tuning.css';
 
+const rootElement =
+  document.getElementById(
+    'root',
+  );
+
+if (!rootElement) {
+  throw new Error(
+    'Elemento root não encontrado.',
+  );
+}
+
 createRoot(
-  document.getElementById('root')!,
+  rootElement,
 ).render(
   <StrictMode>
     <App />

@@ -29,6 +29,9 @@ import MetricCard
 import SatelliteTelemetry
   from '../simulation/SatelliteTelemetry';
 
+import SimulationView
+  from '../simulation/SimulationView';
+
 import Header, {
   type AppSection,
 } from './Header';
@@ -62,6 +65,9 @@ interface DashboardProps {
   inputs:
     SimulationInputs;
 
+  simulationInputs:
+    SimulationInputs;
+
   onInputChange: (
     field:
       SimulationField,
@@ -69,6 +75,9 @@ interface DashboardProps {
     value:
       number,
   ) => void;
+
+  onSimulate:
+    () => void;
 
   onReset:
     () => void;
@@ -154,7 +163,9 @@ function calculateSimulation(
 
 function Dashboard({
   inputs,
+  simulationInputs,
   onInputChange,
+  onSimulate,
   onReset,
 }: DashboardProps) {
   const [
@@ -181,14 +192,19 @@ function Dashboard({
       'dark',
     );
 
+  /*
+   * IMPORTANTE:
+   * resultados são calculados somente
+   * com os parâmetros já executados.
+   */
   const simulation =
     useMemo(
       () =>
         calculateSimulation(
-          inputs,
+          simulationInputs,
         ),
       [
-        inputs,
+        simulationInputs,
       ],
     );
 
@@ -196,7 +212,7 @@ function Dashboard({
     useMemo(
       () => {
         if (
-          inputs.initialPower <=
+          simulationInputs.initialPower <=
           0
         ) {
           return 0;
@@ -207,12 +223,12 @@ function Dashboard({
           Math.min(
             1,
             simulation.analyticalPower /
-              inputs.initialPower,
+              simulationInputs.initialPower,
           ),
         );
       },
       [
-        inputs.initialPower,
+        simulationInputs.initialPower,
         simulation.analyticalPower,
       ],
     );
@@ -251,17 +267,19 @@ function Dashboard({
     ];
 
   function handleSimulate() {
+    onSimulate();
+
     setSimulationActive(
       true,
     );
   }
 
   function handleReset() {
+    onReset();
+
     setSimulationActive(
       false,
     );
-
-    onReset();
   }
 
   function handleToggleTheme() {
@@ -285,7 +303,9 @@ function Dashboard({
           activeSection={
             activeSection
           }
-          theme={theme}
+          theme={
+            theme
+          }
           onSectionChange={
             setActiveSection
           }
@@ -295,324 +315,363 @@ function Dashboard({
         />
 
         {activeSection ===
-        'Model'
-          ? (
-            <main className="mission-stage mission-stage--model">
-              <ModelView
-                inputs={inputs}
+        'Model' ? (
+          <main className="mission-stage mission-stage--model">
+            <ModelView
+              inputs={
+                simulationInputs
+              }
+              receivedPower={
+                simulation
+                  .analyticalPower
+              }
+            />
+          </main>
+        ) : activeSection ===
+          'Simulation' ? (
+          <main className="mission-stage mission-stage--model">
+            <SimulationView
+              inputs={
+                inputs
+              }
+              simulationInputs={
+                simulationInputs
+              }
+              result={
+                simulation
+              }
+              theme={
+                theme
+              }
+              simulationActive={
+                simulationActive
+              }
+              onChange={
+                onInputChange
+              }
+              onSimulate={
+                handleSimulate
+              }
+              onReset={
+                handleReset
+              }
+            />
+          </main>
+        ) : (
+          <main className="mission-stage">
+            <GlobeScene
+              inputs={
+                simulationInputs
+              }
+              simulationActive={
+                simulationActive
+              }
+              signalStrength={
+                signalStrength
+              }
+            />
+
+            <div className="mission-overlay mission-overlay--left">
+              <ControlPanel
+                inputs={
+                  inputs
+                }
+                onChange={
+                  onInputChange
+                }
+                onSimulate={
+                  handleSimulate
+                }
+                onReset={
+                  handleReset
+                }
+              />
+            </div>
+
+            <div className="mission-overlay mission-overlay--right">
+              <SatelliteTelemetry
+                inputs={
+                  simulationInputs
+                }
+                simulationActive={
+                  simulationActive
+                }
                 receivedPower={
                   simulation
                     .analyticalPower
                 }
-              />
-            </main>
-          )
-          : (
-            <main className="mission-stage">
-              <GlobeScene
-                inputs={inputs}
-                simulationActive={
-                  simulationActive
+                attenuationPercent={
+                  simulation
+                    .attenuationPercent
                 }
-                signalStrength={
-                  signalStrength
+                derivative={
+                  simulation
+                    .derivative
+                }
+                relativeErrorPercent={
+                  simulation
+                    .relativeErrorPercent
                 }
               />
+            </div>
 
-              <div className="mission-overlay mission-overlay--left">
-                <ControlPanel
-                  inputs={inputs}
-                  onChange={
-                    onInputChange
-                  }
-                  onSimulate={
-                    handleSimulate
-                  }
-                  onReset={
-                    handleReset
-                  }
-                />
-              </div>
+            <div className="mission-bottom-dock">
+              <section className="dock-object">
+                <div className="dock-object__top">
+                  <div>
+                    <span className="panel__eyebrow">
+                      OBJETO ORBITAL
+                    </span>
 
-              <div className="mission-overlay mission-overlay--right">
-                <SatelliteTelemetry
-                  inputs={inputs}
-                  simulationActive={
-                    simulationActive
-                  }
-                  receivedPower={
-                    simulation.analyticalPower
-                  }
-                  attenuationPercent={
-                    simulation.attenuationPercent
-                  }
-                  derivative={
-                    simulation.derivative
-                  }
-                  relativeErrorPercent={
-                    simulation.relativeErrorPercent
-                  }
-                />
-              </div>
-
-              <div className="mission-bottom-dock">
-                <section className="dock-object">
-                  <div className="dock-object__top">
-                    <div>
-                      <span className="panel__eyebrow">
-                        OBJETO ORBITAL
-                      </span>
-
-                      <strong>
-                        ISS
-                      </strong>
-                    </div>
-
-                    <Satellite
-                      size={25}
-                      strokeWidth={1.2}
-                    />
+                    <strong>
+                      ISS
+                    </strong>
                   </div>
 
-                  <div
-                    className="dock-object__visual"
+                  <Satellite
+                    size={25}
+                    strokeWidth={1.2}
+                  />
+                </div>
+
+                <div
+                  className="dock-object__visual"
+                  style={{
+                    position:
+                      'relative',
+
+                    overflow:
+                      'hidden',
+                  }}
+                >
+                  <img
+                    src={
+                      ISS_IMAGE_PATH
+                    }
+                    alt="Estação Espacial Internacional"
                     style={{
                       position:
-                        'relative',
+                        'absolute',
 
-                      overflow:
-                        'hidden',
+                      inset:
+                        0,
+
+                      width:
+                        '100%',
+
+                      height:
+                        '100%',
+
+                      objectFit:
+                        'cover',
+
+                      objectPosition:
+                        'center',
+
+                      opacity:
+                        0.78,
+                    }}
+                  />
+
+                  <div
+                    aria-hidden="true"
+                    style={{
+                      position:
+                        'absolute',
+
+                      inset:
+                        0,
+
+                      background:
+                        'linear-gradient(180deg, rgba(5, 18, 23, 0.08) 0%, rgba(5, 18, 23, 0.18) 42%, rgba(5, 18, 23, 0.72) 100%)',
+
+                      pointerEvents:
+                        'none',
+                    }}
+                  />
+
+                  <div
+                    style={{
+                      position:
+                        'absolute',
+
+                      left:
+                        '12px',
+
+                      bottom:
+                        '10px',
+
+                      zIndex:
+                        2,
+
+                      display:
+                        'flex',
+
+                      alignItems:
+                        'center',
+
+                      gap:
+                        '6px',
+
+                      color:
+                        '#dbe9eb',
+
+                      fontSize:
+                        '6px',
+
+                      letterSpacing:
+                        '0.14em',
+
+                      textTransform:
+                        'uppercase',
                     }}
                   >
-                    <img
-                      src={
-                        ISS_IMAGE_PATH
-                      }
-                      alt="Estação Espacial Internacional"
-                      style={{
-                        position:
-                          'absolute',
+                    <span className="status-dot status-dot--cyan" />
 
-                        inset:
-                          0,
-
-                        width:
-                          '100%',
-
-                        height:
-                          '100%',
-
-                        objectFit:
-                          'cover',
-
-                        objectPosition:
-                          'center',
-
-                        opacity:
-                          0.78,
-                      }}
-                    />
-
-                    <div
-                      aria-hidden="true"
-                      style={{
-                        position:
-                          'absolute',
-
-                        inset:
-                          0,
-
-                        background:
-                          'linear-gradient(180deg, rgba(5, 18, 23, 0.08) 0%, rgba(5, 18, 23, 0.18) 42%, rgba(5, 18, 23, 0.72) 100%)',
-
-                        pointerEvents:
-                          'none',
-                      }}
-                    />
-
-                    <div
-                      style={{
-                        position:
-                          'absolute',
-
-                        left:
-                          '12px',
-
-                        bottom:
-                          '10px',
-
-                        zIndex:
-                          2,
-
-                        display:
-                          'flex',
-
-                        alignItems:
-                          'center',
-
-                        gap:
-                          '6px',
-
-                        color:
-                          '#dbe9eb',
-
-                        fontSize:
-                          '6px',
-
-                        letterSpacing:
-                          '0.14em',
-
-                        textTransform:
-                          'uppercase',
-                      }}
-                    >
-                      <span
-                        className="status-dot status-dot--cyan"
-                      />
-
-                      ISS NASA
-                    </div>
+                    ISS NASA
                   </div>
+                </div>
 
-                  <div className="dock-object__stats">
-                    <div>
-                      <span>
-                        ÓRBITA
-                      </span>
-
-                      <strong>
-                        ~420 km
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>
-                        SINAL
-                      </span>
-
-                      <strong
-                        className={`dock-signal dock-signal--${signalLevel.toLowerCase()}`}
-                      >
-                        {signalLabel}
-                      </strong>
-                    </div>
-                  </div>
-                </section>
-
-                <section className="metrics-section dock-metrics">
-                  <div className="section-heading">
-                    <div>
-                      <span className="panel__eyebrow">
-                        SIMULAÇÃO
-                      </span>
-
-                      <h2>
-                        Resultados da EDO
-                      </h2>
-                    </div>
-
-                    <span className="section-heading__status">
-                      {simulationActive
-                        ? 'ATIVO'
-                        : 'PRÉVIA'}
+                <div className="dock-object__stats">
+                  <div>
+                    <span>
+                      ÓRBITA
                     </span>
+
+                    <strong>
+                      ~420 km
+                    </strong>
                   </div>
 
-                  <div className="metrics-grid">
-                    <MetricCard
-                      label="POTÊNCIA"
-                      value={
-                        simulation
-                          .analyticalPower
-                          .toFixed(
-                            3,
-                          )
-                      }
-                      unit="W"
-                      description="Potência recebida P(r)"
-                      icon={
-                        <Radio
-                          size={15}
-                        />
-                      }
-                    />
+                  <div>
+                    <span>
+                      SINAL
+                    </span>
 
-                    <MetricCard
-                      label="PERDA"
-                      value={
-                        simulation
-                          .attenuationPercent
-                          .toFixed(
-                            1,
-                          )
-                      }
-                      unit="%"
-                      description="Atenuação do sinal"
-                      icon={
-                        <TrendingDown
-                          size={15}
-                        />
-                      }
-                      accent="amber"
-                    />
-
-                    <MetricCard
-                      label="dP/dr"
-                      value={
-                        simulation
-                          .derivative
-                          .toExponential(
-                            2,
-                          )
-                      }
-                      description="Variação do sinal"
-                      icon={
-                        <Activity
-                          size={15}
-                        />
-                      }
-                      accent="blue"
-                    />
-
-                    <MetricCard
-                      label="ERRO RK4"
-                      value={
-                        simulation
-                          .relativeErrorPercent
-                          .toExponential(
-                            1,
-                          )
-                      }
-                      unit="%"
-                      description="Erro numérico"
-                      icon={
-                        <Sigma
-                          size={15}
-                        />
-                      }
-                    />
+                    <strong
+                      className={`dock-signal dock-signal--${signalLevel.toLowerCase()}`}
+                    >
+                      {signalLabel}
+                    </strong>
                   </div>
-                </section>
+                </div>
+              </section>
 
-                <AnalysisPreview
-                  analyticalPoints={
-                    simulation
-                      .analyticalPoints
-                  }
-                  numericalPoints={
-                    simulation
-                      .numericalPoints
-                  }
-                  initialPower={
-                    inputs.initialPower
-                  }
-                  theme={
-                    theme
-                  }
-                />
-              </div>
-            </main>
-          )}
+              <section className="metrics-section dock-metrics">
+                <div className="section-heading">
+                  <div>
+                    <span className="panel__eyebrow">
+                      SIMULAÇÃO
+                    </span>
+
+                    <h2>
+                      Resultados da EDO
+                    </h2>
+                  </div>
+
+                  <span className="section-heading__status">
+                    {simulationActive
+                      ? 'ATIVO'
+                      : 'PRÉVIA'}
+                  </span>
+                </div>
+
+                <div className="metrics-grid">
+                  <MetricCard
+                    label="POTÊNCIA"
+                    value={
+                      simulation
+                        .analyticalPower
+                        .toFixed(
+                          3,
+                        )
+                    }
+                    unit="W"
+                    description="Potência recebida P(r)"
+                    icon={
+                      <Radio
+                        size={15}
+                      />
+                    }
+                  />
+
+                  <MetricCard
+                    label="PERDA"
+                    value={
+                      simulation
+                        .attenuationPercent
+                        .toFixed(
+                          1,
+                        )
+                    }
+                    unit="%"
+                    description="Atenuação do sinal"
+                    icon={
+                      <TrendingDown
+                        size={15}
+                      />
+                    }
+                    accent="amber"
+                  />
+
+                  <MetricCard
+                    label="dP/dr"
+                    value={
+                      simulation
+                        .derivative
+                        .toExponential(
+                          2,
+                        )
+                    }
+                    description="Variação do sinal"
+                    icon={
+                      <Activity
+                        size={15}
+                      />
+                    }
+                    accent="blue"
+                  />
+
+                  <MetricCard
+                    label="ERRO RK4"
+                    value={
+                      simulation
+                        .relativeErrorPercent
+                        .toExponential(
+                          1,
+                        )
+                    }
+                    unit="%"
+                    description="Erro numérico"
+                    icon={
+                      <Sigma
+                        size={15}
+                      />
+                    }
+                  />
+                </div>
+              </section>
+
+              <AnalysisPreview
+                analyticalPoints={
+                  simulation
+                    .analyticalPoints
+                }
+                numericalPoints={
+                  simulation
+                    .numericalPoints
+                }
+                initialPower={
+                  simulationInputs
+                    .initialPower
+                }
+                theme={
+                  theme
+                }
+              />
+            </div>
+          </main>
+        )}
       </section>
     </div>
   );

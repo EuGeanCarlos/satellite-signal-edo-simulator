@@ -17,6 +17,10 @@ import {
 } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 import {
+  DRACOLoader,
+} from 'three/examples/jsm/loaders/DRACOLoader.js';
+
+import {
   RadioTower,
   Satellite,
 } from 'lucide-react';
@@ -118,6 +122,9 @@ const ISS_ORBIT_INCLINATION =
 
 const ISS_MODEL_PATH =
   `${import.meta.env.BASE_URL}models/iss-b.glb`;
+
+const DRACO_DECODER_PATH =
+  'https://www.gstatic.com/draco/versioned/decoders/1.5.7/';
 
 const INITIAL_ISS_POSITION:
   IssPosition = {
@@ -446,7 +453,9 @@ function GlobeScene({
             signalStrength,
           ),
         ),
-      [signalStrength],
+      [
+        signalStrength,
+      ],
     );
 
   const fallbackIss =
@@ -460,8 +469,25 @@ function GlobeScene({
     let cancelled =
       false;
 
+    const dracoLoader =
+      new DRACOLoader();
+
+    dracoLoader.setDecoderPath(
+      DRACO_DECODER_PATH,
+    );
+
+    dracoLoader.setDecoderConfig({
+      type: 'wasm',
+    });
+
+    dracoLoader.preload();
+
     const loader =
       new GLTFLoader();
+
+    loader.setDRACOLoader(
+      dracoLoader,
+    );
 
     setModelStatus(
       'loading',
@@ -471,7 +497,9 @@ function GlobeScene({
       ISS_MODEL_PATH,
 
       (gltf) => {
-        if (cancelled) {
+        if (
+          cancelled
+        ) {
           return;
         }
 
@@ -489,12 +517,14 @@ function GlobeScene({
       undefined,
 
       (error) => {
-        if (cancelled) {
+        if (
+          cancelled
+        ) {
           return;
         }
 
         console.error(
-          'Falha ao carregar o modelo da ISS:',
+          'Falha ao carregar o modelo 3D da ISS:',
           error,
         );
 
@@ -511,6 +541,8 @@ function GlobeScene({
     return () => {
       cancelled =
         true;
+
+      dracoLoader.dispose();
     };
   }, []);
 
@@ -531,7 +563,9 @@ function GlobeScene({
         issPrototype.clone(
           true,
         ),
-      [issPrototype],
+      [
+        issPrototype,
+      ],
     );
 
   useEffect(() => {
@@ -554,7 +588,8 @@ function GlobeScene({
           (
             performance.now() -
             startTime
-          ) / 1000;
+          ) /
+          1000;
 
         const orbitalAngle =
           (
@@ -582,8 +617,11 @@ function GlobeScene({
           );
 
         setIssPosition({
-          lat: latitude,
-          lng: longitude,
+          lat:
+            latitude,
+
+          lng:
+            longitude,
         });
       };
 
@@ -669,69 +707,72 @@ function GlobeScene({
   const orbitPaths =
     useMemo<
       OrbitPath[]
-    >(() => {
-      const points:
-        OrbitPoint[] = [];
+    >(
+      () => {
+        const points:
+          OrbitPoint[] = [];
 
-      for (
-        let index = 0;
-        index <= 360;
-        index += 1
-      ) {
-        const radians =
-          THREE.MathUtils
-            .degToRad(
-              index,
-            );
+        for (
+          let index = 0;
+          index <= 360;
+          index += 1
+        ) {
+          const radians =
+            THREE.MathUtils
+              .degToRad(
+                index,
+              );
 
-        points.push({
-          lat:
-            ISS_ORBIT_INCLINATION *
-            Math.sin(
-              radians,
-            ),
+          points.push({
+            lat:
+              ISS_ORBIT_INCLINATION *
+              Math.sin(
+                radians,
+              ),
 
-          lng:
-            wrapLongitude(
-              -180 +
-              index,
-            ),
+            lng:
+              wrapLongitude(
+                -180 +
+                index,
+              ),
 
-          altitude:
-            ISS_ALTITUDE,
-        });
-      }
+            altitude:
+              ISS_ALTITUDE,
+          });
+        }
 
-      return [
-        {
-          points,
+        return [
+          {
+            points,
 
-          color:
-            simulationActive
-              ? '#568994'
-              : '#30474E',
+            color:
+              simulationActive
+                ? '#568994'
+                : '#30474E',
 
-          stroke:
-            0.12,
+            stroke:
+              0.12,
 
-          dashLength:
-            0.07,
+            dashLength:
+              0.07,
 
-          dashGap:
-            0.022,
+            dashGap:
+              0.022,
 
-          dashAnimateTime:
-            simulationActive
-              ? 9500
-              : 0,
+            dashAnimateTime:
+              simulationActive
+                ? 9500
+                : 0,
 
-          label:
-            'Órbita ilustrativa da ISS',
-        },
-      ];
-    }, [
-      simulationActive,
-    ]);
+            label:
+              'Órbita ilustrativa da ISS',
+          },
+        ];
+      },
+      [
+        simulationActive,
+      ],
+    );
 
   const signalColors =
     useMemo(
@@ -771,7 +812,9 @@ function GlobeScene({
           '#A9484D',
         ];
       },
-      [strength],
+      [
+        strength,
+      ],
     );
 
   const signalArcs =
@@ -890,7 +933,9 @@ function GlobeScene({
       globeRef.current
         ?.controls();
 
-    if (!controls) {
+    if (
+      !controls
+    ) {
       return;
     }
 
@@ -937,11 +982,15 @@ function GlobeScene({
   return (
     <section className="globe-panel">
       <div
-        ref={containerRef}
+        ref={
+          containerRef
+        }
         className="globe-viewport"
       >
         <Globe
-          ref={globeRef}
+          ref={
+            globeRef
+          }
 
           width={
             dimensions.width
@@ -983,7 +1032,8 @@ function GlobeScene({
             point,
           ) => {
             const item =
-              point as GroundPoint;
+              point as
+                GroundPoint;
 
             return `
               <div class="globe-tooltip">
@@ -1009,7 +1059,8 @@ function GlobeScene({
             object,
           ) => {
             const item =
-              object as IssObjectData;
+              object as
+                IssObjectData;
 
             return `
               <div class="globe-tooltip">
@@ -1048,12 +1099,16 @@ function GlobeScene({
           arcStartLat="startLat"
           arcStartLng="startLng"
           arcStartAltitude="startAltitude"
+
           arcEndLat="endLat"
           arcEndLng="endLng"
           arcEndAltitude="endAltitude"
+
           arcAltitude="maxAltitude"
+
           arcColor="color"
           arcStroke="stroke"
+
           arcDashLength="dashLength"
           arcDashGap="dashGap"
           arcDashAnimateTime="dashAnimateTime"
@@ -1065,7 +1120,9 @@ function GlobeScene({
           </span>
 
           <strong>
-            {inputs.finalDistance.toLocaleString()}
+            {inputs.finalDistance.toLocaleString(
+              'pt-BR',
+            )}
             {' '}
             km
           </strong>
@@ -1115,7 +1172,9 @@ function GlobeScene({
 
         <div className="globe-scale">
           ISS NASA
+
           <span />
+
           ARRASTE · GIRE · ZOOM
         </div>
       </div>

@@ -16,32 +16,50 @@ type ThemeMode =
   | 'light';
 
 interface HeaderProps {
-  activeSection: AppSection;
+  activeSection:
+    AppSection;
 
-  theme: ThemeMode;
+  theme:
+    ThemeMode;
 
   onSectionChange: (
-    section: AppSection,
+    section:
+      AppSection,
   ) => void;
 
-  onToggleTheme: () => void;
+  onToggleTheme:
+    () => void;
 }
 
 const navigation: {
-  value: AppSection;
-  label: string;
+  value:
+    AppSection;
+
+  label:
+    string;
 }[] = [
   {
-    value: 'Overview',
-    label: 'VISÃO GERAL',
+    value:
+      'Overview',
+
+    label:
+      'VISÃO GERAL',
   },
+
   {
-    value: 'Model',
-    label: 'MODELO',
+    value:
+      'Model',
+
+    label:
+      'MODELO',
   },
+
   {
-    value: 'Simulation',
-    label: 'SIMULAÇÃO',
+    value:
+      'Simulation',
+
+    label:
+      'SIMULAÇÃO',
   },
 ];
 
@@ -87,33 +105,23 @@ function Header({
             label,
           }) => {
             const isActive =
-              activeSection === value;
-
-            const isDisabled =
-              value === 'Simulation';
+              activeSection ===
+              value;
 
             return (
               <button
                 type="button"
                 key={value}
-                disabled={isDisabled}
-                title={
-                  isDisabled
-                    ? 'O ambiente de simulação será adicionado na próxima etapa'
-                    : undefined
-                }
                 className={
                   isActive
                     ? 'topbar__navigation-item topbar__navigation-item--active'
                     : 'topbar__navigation-item'
                 }
-                onClick={() => {
-                  if (!isDisabled) {
-                    onSectionChange(
-                      value,
-                    );
-                  }
-                }}
+                onClick={() =>
+                  onSectionChange(
+                    value,
+                  )
+                }
               >
                 {label}
               </button>
@@ -150,7 +158,9 @@ function Header({
         <button
           type="button"
           className="topbar__icon-button"
-          onClick={onToggleTheme}
+          onClick={
+            onToggleTheme
+          }
           title={
             theme === 'dark'
               ? 'Alternar para tema claro'
