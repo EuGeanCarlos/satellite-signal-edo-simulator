@@ -28,6 +28,7 @@ import type {
 interface GlobeSceneProps {
   inputs: SimulationInputs;
   simulationActive: boolean;
+  signalStrength: number;
 }
 
 interface GroundPoint {
@@ -102,28 +103,16 @@ type ModelStatus =
   | 'ready'
   | 'error';
 
-const EARTH_RADIUS_KM = 6371;
+const EARTH_RADIUS_KM =
+  6371;
 
-/*
- * Altitude visual representativa da ISS.
- *
- * Nesta etapa ainda NÃO estamos usando
- * telemetria/TLE em tempo real.
- *
- * Posteriormente podemos substituir
- * este movimento pela posição calculada
- * com satellite.js + CelesTrak.
- */
-const ISS_ALTITUDE_KM = 420;
+const ISS_ALTITUDE_KM =
+  420;
 
 const ISS_ALTITUDE =
   ISS_ALTITUDE_KM /
   EARTH_RADIUS_KM;
 
-/*
- * Inclinação orbital aproximada utilizada
- * apenas para a animação visual.
- */
 const ISS_ORBIT_INCLINATION =
   51.6;
 
@@ -145,7 +134,9 @@ function wrapLongitude(
   longitude: number,
 ): number {
   return (
-    ((longitude + 180) % 360 + 360) %
+    ((longitude + 180) %
+      360 +
+      360) %
       360 -
     180
   );
@@ -177,9 +168,6 @@ function createFallbackIss():
       roughness: 0.56,
     });
 
-  /*
-   * Truss central
-   */
   const truss =
     new THREE.Mesh(
       new THREE.BoxGeometry(
@@ -190,11 +178,10 @@ function createFallbackIss():
       darkMaterial,
     );
 
-  station.add(truss);
+  station.add(
+    truss,
+  );
 
-  /*
-   * Módulos centrais
-   */
   for (
     let index = -2;
     index <= 2;
@@ -222,31 +209,28 @@ function createFallbackIss():
         ? 0
         : 0.65;
 
-    station.add(module);
+    station.add(
+      module,
+    );
   }
 
-  /*
-   * Painéis solares
-   */
-  const solarPanelGeometry =
+  const panelGeometry =
     new THREE.BoxGeometry(
       5.8,
       0.14,
       2,
     );
 
-  const panelPositions = [
+  [
     -10,
     -6.5,
     6.5,
     10,
-  ];
-
-  panelPositions.forEach(
+  ].forEach(
     (xPosition) => {
       const frontPanel =
         new THREE.Mesh(
-          solarPanelGeometry,
+          panelGeometry,
           panelMaterial,
         );
 
@@ -272,9 +256,6 @@ function createFallbackIss():
     },
   );
 
-  /*
-   * Pequena estrutura vertical
-   */
   const mast =
     new THREE.Mesh(
       new THREE.BoxGeometry(
@@ -285,9 +266,12 @@ function createFallbackIss():
       darkMaterial,
     );
 
-  mast.position.y = 2.2;
+  mast.position.y =
+    2.2;
 
-  station.add(mast);
+  station.add(
+    mast,
+  );
 
   station.rotation.y =
     Math.PI / 2;
@@ -296,11 +280,12 @@ function createFallbackIss():
 }
 
 function prepareIssModel(
-  source:
-    THREE.Object3D,
+  source: THREE.Object3D,
 ): THREE.Object3D {
   const model =
-    source.clone(true);
+    source.clone(
+      true,
+    );
 
   model.traverse(
     (child) => {
@@ -337,9 +322,6 @@ function prepareIssModel(
     },
   );
 
-  /*
-   * Descobre o tamanho original.
-   */
   const box =
     new THREE.Box3()
       .setFromObject(
@@ -358,14 +340,6 @@ function prepareIssModel(
       size.z,
     );
 
-  /*
-   * O globo possui raio visual
-   * próximo de 100 unidades.
-   *
-   * Queremos a ISS grande o
-   * suficiente para ser percebida,
-   * mas sem dominar o planeta.
-   */
   if (
     Number.isFinite(
       largestDimension,
@@ -384,9 +358,6 @@ function prepareIssModel(
     );
   }
 
-  /*
-   * Recentraliza o GLB.
-   */
   const scaledBox =
     new THREE.Box3()
       .setFromObject(
@@ -402,22 +373,13 @@ function prepareIssModel(
     center,
   );
 
-  /*
-   * Container separado.
-   *
-   * Assim o react-globe.gl pode
-   * orientar o objeto em relação
-   * à superfície sem destruir a
-   * orientação interna do modelo.
-   */
   const container =
     new THREE.Group();
 
-  container.add(model);
+  container.add(
+    model,
+  );
 
-  /*
-   * Ajuste visual do GLB NASA.
-   */
   model.rotation.x =
     Math.PI / 2;
 
@@ -430,11 +392,12 @@ function prepareIssModel(
 function GlobeScene({
   inputs,
   simulationActive,
+  signalStrength,
 }: GlobeSceneProps) {
   const containerRef =
-    useRef<HTMLDivElement | null>(
-      null,
-    );
+    useRef<
+      HTMLDivElement | null
+    >(null);
 
   const globeRef =
     useRef<
@@ -445,8 +408,8 @@ function GlobeScene({
     dimensions,
     setDimensions,
   ] = useState({
-    width: 700,
-    height: 480,
+    width: 900,
+    height: 760,
   });
 
   const [
@@ -473,9 +436,19 @@ function GlobeScene({
       INITIAL_ISS_POSITION,
     );
 
-  /*
-   * Fallback construído com Three.js.
-   */
+  const strength =
+    useMemo(
+      () =>
+        Math.max(
+          0,
+          Math.min(
+            1,
+            signalStrength,
+          ),
+        ),
+      [signalStrength],
+    );
+
   const fallbackIss =
     useMemo(
       () =>
@@ -483,9 +456,6 @@ function GlobeScene({
       [],
     );
 
-  /*
-   * Carrega o GLB oficial da NASA.
-   */
   useEffect(() => {
     let cancelled =
       false;
@@ -505,13 +475,10 @@ function GlobeScene({
           return;
         }
 
-        const prepared =
+        setIssModel(
           prepareIssModel(
             gltf.scene,
-          );
-
-        setIssModel(
-          prepared,
+          ),
         );
 
         setModelStatus(
@@ -527,7 +494,7 @@ function GlobeScene({
         }
 
         console.error(
-          'Falha ao carregar o modelo 3D da ISS:',
+          'Failed to load ISS model:',
           error,
         );
 
@@ -547,9 +514,6 @@ function GlobeScene({
     };
   }, []);
 
-  /*
-   * Modelo utilizado pelo globo.
-   */
   const issPrototype =
     useMemo(
       () =>
@@ -561,10 +525,6 @@ function GlobeScene({
       ],
     );
 
-  /*
-   * Cada renderização recebe
-   * um clone independente.
-   */
   const createIssObject =
     useCallback(
       () =>
@@ -574,15 +534,6 @@ function GlobeScene({
       [issPrototype],
     );
 
-  /*
-   * Movimento orbital ilustrativo.
-   *
-   * Quando a simulação está parada,
-   * a ISS fica no ponto inicial.
-   *
-   * Quando Run Simulation é acionado,
-   * ela percorre visualmente a órbita.
-   */
   useEffect(() => {
     if (
       !simulationActive
@@ -605,24 +556,18 @@ function GlobeScene({
             startTime
           ) / 1000;
 
-        /*
-         * 3 graus/segundo.
-         *
-         * É muito mais rápido que
-         * a ISS real, propositalmente,
-         * para tornar a animação
-         * visível durante a apresentação.
-         */
         const orbitalAngle =
           (
             elapsedSeconds *
             3
-          ) % 360;
+          ) %
+          360;
 
         const radians =
-          THREE.MathUtils.degToRad(
-            orbitalAngle,
-          );
+          THREE.MathUtils
+            .degToRad(
+              orbitalAngle,
+            );
 
         const latitude =
           ISS_ORBIT_INCLINATION *
@@ -659,9 +604,6 @@ function GlobeScene({
     simulationActive,
   ]);
 
-  /*
-   * Estação terrestre.
-   */
   const stationPoints =
     useMemo<
       GroundPoint[]
@@ -690,9 +632,6 @@ function GlobeScene({
       [],
     );
 
-  /*
-   * ISS como objeto Three.js.
-   */
   const issObjects =
     useMemo<
       IssObjectData[]
@@ -727,9 +666,6 @@ function GlobeScene({
       ],
     );
 
-  /*
-   * Órbita inclinada ilustrativa.
-   */
   const orbitPaths =
     useMemo<
       OrbitPath[]
@@ -737,38 +673,30 @@ function GlobeScene({
       const points:
         OrbitPoint[] = [];
 
-      const pointCount =
-        361;
-
       for (
         let index = 0;
-        index <
-        pointCount;
+        index <= 360;
         index += 1
       ) {
-        const angle =
-          index;
-
         const radians =
-          THREE.MathUtils.degToRad(
-            angle,
-          );
-
-        const latitude =
-          ISS_ORBIT_INCLINATION *
-          Math.sin(
-            radians,
-          );
-
-        const longitude =
-          wrapLongitude(
-            -180 +
-            angle,
-          );
+          THREE.MathUtils
+            .degToRad(
+              index,
+            );
 
         points.push({
-          lat: latitude,
-          lng: longitude,
+          lat:
+            ISS_ORBIT_INCLINATION *
+            Math.sin(
+              radians,
+            ),
+
+          lng:
+            wrapLongitude(
+              -180 +
+              index,
+            ),
+
           altitude:
             ISS_ALTITUDE,
         });
@@ -780,21 +708,21 @@ function GlobeScene({
 
           color:
             simulationActive
-              ? '#3C8694'
-              : '#263D44',
+              ? '#568994'
+              : '#30474E',
 
           stroke:
-            0.14,
+            0.12,
 
           dashLength:
-            0.075,
+            0.07,
 
           dashGap:
-            0.025,
+            0.022,
 
           dashAnimateTime:
             simulationActive
-              ? 10000
+              ? 9500
               : 0,
 
           label:
@@ -805,10 +733,47 @@ function GlobeScene({
       simulationActive,
     ]);
 
-  /*
-   * Arco do sinal acompanha
-   * continuamente a ISS.
-   */
+  const signalColors =
+    useMemo(
+      () => {
+        if (
+          strength >=
+          0.5
+        ) {
+          return [
+            '#74F2EE',
+            '#53B7EF',
+          ];
+        }
+
+        if (
+          strength >=
+          0.2
+        ) {
+          return [
+            '#E8CA65',
+            '#6CBFC9',
+          ];
+        }
+
+        if (
+          strength >=
+          0.05
+        ) {
+          return [
+            '#E99C54',
+            '#D46C54',
+          ];
+        }
+
+        return [
+          '#EA6767',
+          '#A9484D',
+        ];
+      },
+      [strength],
+    );
+
   const signalArcs =
     useMemo<
       SignalArc[]
@@ -839,19 +804,18 @@ function GlobeScene({
 
           color:
             simulationActive
-              ? [
-                  '#78EFF1',
-                  '#4CA6E9',
-                ]
+              ? signalColors
               : [
-                  '#344C53',
-                  '#263A41',
+                  '#374B51',
+                  '#273A40',
                 ],
 
           stroke:
             simulationActive
-              ? 0.62
-              : 0.24,
+              ? 0.20 +
+                strength *
+                  0.9
+              : 0.18,
 
           dashLength:
             0.22,
@@ -861,19 +825,22 @@ function GlobeScene({
 
           dashAnimateTime:
             simulationActive
-              ? 1350
+              ? Math.round(
+                  2200 -
+                  strength *
+                    1100,
+                )
               : 0,
         },
       ],
       [
         issPosition,
         simulationActive,
+        strength,
+        signalColors,
       ],
     );
 
-  /*
-   * Responsividade do canvas.
-   */
   useEffect(() => {
     if (
       !containerRef.current
@@ -918,9 +885,6 @@ function GlobeScene({
     };
   }, []);
 
-  /*
-   * Configuração da câmera.
-   */
   useEffect(() => {
     const controls =
       globeRef.current
@@ -930,19 +894,11 @@ function GlobeScene({
       return;
     }
 
-    /*
-     * Em standby o planeta
-     * gira devagar.
-     *
-     * Durante a simulação,
-     * deixamos a ISS ser o
-     * elemento em movimento.
-     */
     controls.autoRotate =
       !simulationActive;
 
     controls.autoRotateSpeed =
-      0.18;
+      0.16;
 
     controls.enableDamping =
       true;
@@ -951,7 +907,7 @@ function GlobeScene({
       0.055;
 
     controls.minDistance =
-      175;
+      165;
 
     controls.maxDistance =
       470;
@@ -959,9 +915,9 @@ function GlobeScene({
     globeRef.current
       ?.pointOfView(
         {
-          lat: 5,
+          lat: 8,
           lng: -40,
-          altitude: 2.15,
+          altitude: 1.78,
         },
         900,
       );
@@ -980,46 +936,12 @@ function GlobeScene({
 
   return (
     <section className="globe-panel">
-      <div className="globe-panel__topbar">
-        <div>
-          <span className="panel__eyebrow">
-            ORBITAL MONITOR
-          </span>
-
-          <h2>
-            ISS Communication Link
-          </h2>
-        </div>
-
-        <div className="globe-panel__live">
-          <span
-            className={
-              simulationActive
-                ? 'status-dot status-dot--cyan'
-                : 'status-dot'
-            }
-          />
-
-          {modelLabel}
-
-          {' · '}
-
-          {simulationActive
-            ? 'LIVE'
-            : 'STANDBY'}
-        </div>
-      </div>
-
       <div
-        ref={
-          containerRef
-        }
+        ref={containerRef}
         className="globe-viewport"
       >
         <Globe
-          ref={
-            globeRef
-          }
+          ref={globeRef}
 
           width={
             dimensions.width
@@ -1039,191 +961,126 @@ function GlobeScene({
 
           showAtmosphere
 
-          atmosphereColor="#71DDE8"
+          atmosphereColor="#72DBE7"
 
           atmosphereAltitude={
-            0.16
+            0.15
           }
 
           showGraticules
 
-          /*
-           * Estação terrestre
-           */
           pointsData={
             stationPoints
           }
 
           pointLat="lat"
-
           pointLng="lng"
-
           pointAltitude="altitude"
-
           pointRadius="radius"
-
           pointColor="color"
 
-          pointLabel={
-            (
-              point,
-            ) => {
-              const item =
-                point as GroundPoint;
+          pointLabel={(
+            point,
+          ) => {
+            const item =
+              point as GroundPoint;
 
-              return `
-                <div style="
-                  background: rgba(5,16,21,.96);
-                  border: 1px solid rgba(240,197,110,.28);
-                  padding: 8px 10px;
-                  color: #e7edef;
-                  font-size: 11px;
-                ">
-                  ${item.label}
-                </div>
-              `;
-            }
-          }
+            return `
+              <div class="globe-tooltip">
+                ${item.label}
+              </div>
+            `;
+          }}
 
-          /*
-           * ISS 3D
-           */
           objectsData={
             issObjects
           }
 
           objectLat="lat"
-
           objectLng="lng"
-
           objectAltitude="altitude"
-
           objectRotation="rotation"
 
           objectThreeObject={
             createIssObject
           }
 
-          objectLabel={
-            (
-              object,
-            ) => {
-              const item =
-                object as IssObjectData;
+          objectLabel={(
+            object,
+          ) => {
+            const item =
+              object as IssObjectData;
 
-              return `
-                <div style="
-                  background: rgba(5,16,21,.96);
-                  border: 1px solid rgba(107,231,234,.3);
-                  padding: 10px 11px;
-                  color: #e7edef;
-                  font-size: 11px;
-                ">
-                  <strong style="
-                    color:#6be7ea;
-                  ">
-                    ${item.label}
-                  </strong>
+            return `
+              <div class="globe-tooltip">
+                <strong>
+                  ${item.label}
+                </strong>
+                <br />
+                Orbit: ~${ISS_ALTITUDE_KM} km
+                <br />
+                ${item.lat.toFixed(2)}°,
+                ${item.lng.toFixed(2)}°
+              </div>
+            `;
+          }}
 
-                  <br />
-
-                  <span style="
-                    color:#82969d;
-                  ">
-                    Visual orbital altitude:
-                    ${ISS_ALTITUDE_KM}
-                    km
-                  </span>
-
-                  <br />
-
-                  <span style="
-                    color:#82969d;
-                  ">
-                    Latitude:
-                    ${item.lat.toFixed(2)}°
-                  </span>
-
-                  <br />
-
-                  <span style="
-                    color:#82969d;
-                  ">
-                    Longitude:
-                    ${item.lng.toFixed(2)}°
-                  </span>
-                </div>
-              `;
-            }
-          }
-
-          /*
-           * Órbita
-           */
           pathsData={
             orbitPaths
           }
 
           pathPoints="points"
-
           pathPointLat="lat"
-
           pathPointLng="lng"
-
           pathPointAlt="altitude"
-
           pathColor="color"
-
           pathStroke="stroke"
-
           pathDashLength="dashLength"
-
           pathDashGap="dashGap"
-
           pathDashAnimateTime="dashAnimateTime"
-
-          pathResolution={
-            1
-          }
-
+          pathResolution={1}
           pathLabel="label"
 
-          /*
-           * Sinal ISS -> estação
-           */
           arcsData={
             signalArcs
           }
 
           arcStartLat="startLat"
-
           arcStartLng="startLng"
-
           arcStartAltitude="startAltitude"
-
           arcEndLat="endLat"
-
           arcEndLng="endLng"
-
           arcEndAltitude="endAltitude"
-
           arcAltitude="maxAltitude"
-
           arcColor="color"
-
           arcStroke="stroke"
-
           arcDashLength="dashLength"
-
           arcDashGap="dashGap"
-
           arcDashAnimateTime="dashAnimateTime"
         />
+
+        <div className="globe-distance">
+          <span>
+            MODEL DISTANCE
+          </span>
+
+          <strong>
+            {inputs.finalDistance.toLocaleString()}
+            {' '}
+            km
+          </strong>
+        </div>
+
+        <div className="globe-model-status">
+          <span className="status-dot status-dot--cyan" />
+
+          {modelLabel}
+        </div>
 
         <div className="globe-hud globe-hud--satellite">
           <div className="globe-hud__icon">
             <Satellite
-              size={18}
+              size={17}
             />
           </div>
 
@@ -1233,9 +1090,7 @@ function GlobeScene({
             </span>
 
             <strong>
-              ~{ISS_ALTITUDE_KM}
-              {' '}
-              km orbit
+              ~420 km orbit
             </strong>
           </div>
         </div>
@@ -1243,7 +1098,7 @@ function GlobeScene({
         <div className="globe-hud globe-hud--station">
           <div className="globe-hud__icon globe-hud__icon--station">
             <RadioTower
-              size={18}
+              size={16}
             />
           </div>
 
@@ -1258,52 +1113,10 @@ function GlobeScene({
           </div>
         </div>
 
-        <div className="globe-distance">
-          <span>
-            EDO LINK DISTANCE
-          </span>
-
-          <strong>
-            {inputs.finalDistance.toLocaleString()}
-            {' '}
-            km
-          </strong>
-        </div>
-
         <div className="globe-scale">
-          <span>
-            NASA
-          </span>
-
-          <div />
-
-          <span>
-            ISS MODEL B
-          </span>
-        </div>
-      </div>
-
-      <div className="globe-panel__footer">
-        <div>
-          <span className="legend-dot legend-dot--satellite" />
-
-          ISS
-        </div>
-
-        <div>
-          <span className="legend-dot legend-dot--station" />
-
-          GROUND STATION
-        </div>
-
-        <div>
-          <span className="legend-line" />
-
-          SIGNAL PATH
-        </div>
-
-        <div className="globe-panel__interaction">
-          DRAG TO ROTATE · SCROLL TO ZOOM
+          NASA ISS
+          <span />
+          DRAG · ROTATE · ZOOM
         </div>
       </div>
     </section>

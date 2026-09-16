@@ -9,41 +9,98 @@ import type {
   SimulationPoint,
 } from '../../types/simulation';
 
+type ThemeMode =
+  | 'dark'
+  | 'light';
+
 interface AnalysisPreviewProps {
-  analyticalPoints: SimulationPoint[];
-  numericalPoints: SimulationPoint[];
-  initialPower: number;
+  analyticalPoints:
+    SimulationPoint[];
+
+  numericalPoints:
+    SimulationPoint[];
+
+  initialPower:
+    number;
+
+  theme:
+    ThemeMode;
 }
 
 function buildHoverText(
-  points: SimulationPoint[],
-  initialPower: number,
-  method: string,
-): string[] {
-  return points.map((point) => {
-    const attenuation =
-      initialPower > 0
-        ? (
-            1 -
-            point.power / initialPower
-          ) * 100
-        : 0;
+  points:
+    SimulationPoint[],
 
-    return [
-      `<b>${method}</b>`,
-      `<b>Distance:</b> ${point.distance.toFixed(2)} km`,
-      `<b>Power:</b> ${point.power.toFixed(6)} W`,
-      `<b>dP/dr:</b> ${point.derivative.toExponential(5)} W/km`,
-      `<b>Attenuation:</b> ${attenuation.toFixed(3)} %`,
-    ].join('<br>');
-  });
+  initialPower:
+    number,
+
+  method:
+    string,
+): string[] {
+  return points.map(
+    (point) => {
+      const attenuation =
+        initialPower > 0
+          ? (
+              1 -
+              point.power /
+                initialPower
+            ) *
+            100
+          : 0;
+
+      return [
+        `<b>${method}</b>`,
+        `<b>Distance:</b> ${point.distance.toFixed(2)} km`,
+        `<b>Power:</b> ${point.power.toFixed(6)} W`,
+        `<b>dP/dr:</b> ${point.derivative.toExponential(5)} W/km`,
+        `<b>Attenuation:</b> ${attenuation.toFixed(3)} %`,
+      ].join(
+        '<br>',
+      );
+    },
+  );
 }
 
 function AnalysisPreview({
   analyticalPoints,
   numericalPoints,
   initialPower,
+  theme,
 }: AnalysisPreviewProps) {
+  const isLight =
+    theme === 'light';
+
+  const textColor =
+    isLight
+      ? '#4B626C'
+      : '#81969E';
+
+  const gridColor =
+    isLight
+      ? '#D9E2E5'
+      : '#1A323A';
+
+  const zeroColor =
+    isLight
+      ? '#BACBD0'
+      : '#29434B';
+
+  const sceneColor =
+    isLight
+      ? '#F7FAFB'
+      : '#08171C';
+
+  const hoverBackground =
+    isLight
+      ? '#FFFFFF'
+      : '#071419';
+
+  const hoverTextColor =
+    isLight
+      ? '#18313B'
+      : '#E5F1F3';
+
   const analyticalHover =
     buildHoverText(
       analyticalPoints,
@@ -67,14 +124,14 @@ function AnalysisPreview({
           </span>
 
           <h2>
-            Interactive 3D Phase Space
+            3D Phase Space
           </h2>
         </div>
 
         <div className="analysis-panel__mode">
-          <Box size={15} />
+          <Box size={14} />
 
-          r · P(r) · dP/dr
+          X · Y · Z
         </div>
       </div>
 
@@ -82,77 +139,117 @@ function AnalysisPreview({
         <Plot
           data={[
             {
-              type: 'scatter3d',
+              type:
+                'scatter3d',
 
-              mode: 'lines',
+              mode:
+                'lines',
 
-              name: 'Analytical',
+              name:
+                'Analytical',
 
-              x: analyticalPoints.map(
-                (point) =>
-                  point.distance,
-              ),
+              x:
+                analyticalPoints.map(
+                  (
+                    point,
+                  ) =>
+                    point.distance,
+                ),
 
-              y: analyticalPoints.map(
-                (point) =>
-                  point.power,
-              ),
+              y:
+                analyticalPoints.map(
+                  (
+                    point,
+                  ) =>
+                    point.power,
+                ),
 
-              z: analyticalPoints.map(
-                (point) =>
-                  point.derivative,
-              ),
+              z:
+                analyticalPoints.map(
+                  (
+                    point,
+                  ) =>
+                    point.derivative,
+                ),
 
-              text: analyticalHover,
+              text:
+                analyticalHover,
 
-              hoverinfo: 'text',
+              hoverinfo:
+                'text',
 
               line: {
-                color: '#68E4E7',
-                width: 7,
+                color:
+                  '#48DCE0',
+
+                width:
+                  6,
               },
             },
 
             {
-              type: 'scatter3d',
+              type:
+                'scatter3d',
 
-              mode: 'lines+markers',
+              mode:
+                'lines+markers',
 
-              name: 'RK4',
+              name:
+                'RK4',
 
-              x: numericalPoints.map(
-                (point) =>
-                  point.distance,
-              ),
+              x:
+                numericalPoints.map(
+                  (
+                    point,
+                  ) =>
+                    point.distance,
+                ),
 
-              y: numericalPoints.map(
-                (point) =>
-                  point.power,
-              ),
+              y:
+                numericalPoints.map(
+                  (
+                    point,
+                  ) =>
+                    point.power,
+                ),
 
-              z: numericalPoints.map(
-                (point) =>
-                  point.derivative,
-              ),
+              z:
+                numericalPoints.map(
+                  (
+                    point,
+                  ) =>
+                    point.derivative,
+                ),
 
-              text: numericalHover,
+              text:
+                numericalHover,
 
-              hoverinfo: 'text',
+              hoverinfo:
+                'text',
 
               line: {
-                color: '#5587E8',
-                width: 4,
+                color:
+                  '#4F83D7',
+
+                width:
+                  4,
               },
 
               marker: {
-                color: '#7EA4F4',
-                size: 2.6,
-                opacity: 0.78,
+                color:
+                  '#6E9BE5',
+
+                size:
+                  2.5,
+
+                opacity:
+                  0.75,
               },
             },
           ]}
           layout={{
-            autosize: true,
+            autosize:
+              true,
 
             paper_bgcolor:
               'rgba(0,0,0,0)',
@@ -163,32 +260,37 @@ function AnalysisPreview({
             margin: {
               l: 0,
               r: 0,
-              t: 4,
+              t: 0,
               b: 0,
             },
 
-            showlegend: false,
+            showlegend:
+              false,
 
             hoverlabel: {
-              bgcolor: '#071419',
+              bgcolor:
+                hoverBackground,
 
               bordercolor:
-                '#31545D',
+                gridColor,
 
               font: {
-                color: '#E5F1F3',
-                size: 11,
+                color:
+                  hoverTextColor,
+
+                size:
+                  11,
               },
             },
 
             scene: {
               bgcolor:
-                'rgba(0,0,0,0)',
+                sceneColor,
 
               camera: {
                 eye: {
-                  x: 1.45,
-                  y: 1.35,
+                  x: 1.55,
+                  y: 1.40,
                   z: 0.82,
                 },
               },
@@ -196,82 +298,127 @@ function AnalysisPreview({
               xaxis: {
                 title: {
                   text:
-                    'Distance r (km)',
+                    'Distance r',
 
                   font: {
-                    color: '#82969D',
-                    size: 10,
+                    color:
+                      textColor,
+
+                    size:
+                      9,
                   },
                 },
 
-                color: '#6E838A',
+                tickfont: {
+                  color:
+                    textColor,
+
+                  size:
+                    8,
+                },
+
+                color:
+                  textColor,
 
                 gridcolor:
-                  '#183038',
+                  gridColor,
 
                 zerolinecolor:
-                  '#28434B',
+                  zeroColor,
 
                 backgroundcolor:
-                  'rgba(5,17,22,.18)',
+                  sceneColor,
 
-                showbackground: true,
+                showbackground:
+                  true,
               },
 
               yaxis: {
                 title: {
                   text:
-                    'Power P(r) (W)',
+                    'Power P(r)',
 
                   font: {
-                    color: '#82969D',
-                    size: 10,
+                    color:
+                      textColor,
+
+                    size:
+                      9,
                   },
                 },
 
-                color: '#6E838A',
+                tickfont: {
+                  color:
+                    textColor,
+
+                  size:
+                    8,
+                },
+
+                color:
+                  textColor,
 
                 gridcolor:
-                  '#183038',
+                  gridColor,
 
                 zerolinecolor:
-                  '#28434B',
+                  zeroColor,
 
                 backgroundcolor:
-                  'rgba(5,17,22,.18)',
+                  sceneColor,
 
-                showbackground: true,
+                showbackground:
+                  true,
               },
 
               zaxis: {
                 title: {
-                  text: 'dP/dr',
+                  text:
+                    'dP/dr',
 
                   font: {
-                    color: '#82969D',
-                    size: 10,
+                    color:
+                      textColor,
+
+                    size:
+                      9,
                   },
                 },
 
-                color: '#6E838A',
+                tickfont: {
+                  color:
+                    textColor,
+
+                  size:
+                    8,
+                },
+
+                color:
+                  textColor,
 
                 gridcolor:
-                  '#183038',
+                  gridColor,
 
                 zerolinecolor:
-                  '#28434B',
+                  zeroColor,
 
                 backgroundcolor:
-                  'rgba(5,17,22,.18)',
+                  sceneColor,
 
-                showbackground: true,
+                showbackground:
+                  true,
               },
             },
           }}
           config={{
-            responsive: true,
-            displaylogo: false,
-            scrollZoom: true,
+            responsive:
+              true,
+
+            displaylogo:
+              false,
+
+            scrollZoom:
+              true,
 
             modeBarButtonsToRemove: [
               'toImage',
@@ -282,11 +429,11 @@ function AnalysisPreview({
         />
 
         <div className="analysis-interaction">
-          <MousePointer2 size={13} />
+          <MousePointer2
+            size={12}
+          />
 
-          <span>
-            DRAG TO ROTATE · SCROLL TO ZOOM
-          </span>
+          ROTATE · ZOOM
         </div>
       </div>
 
@@ -294,43 +441,25 @@ function AnalysisPreview({
         <div>
           <span className="analysis-legend analysis-legend--analytical" />
 
-          ANALYTICAL
+          Analytical
         </div>
 
         <div>
-          <span
-            className="analysis-legend"
-            style={{
-              background:
-                '#5587E8',
-            }}
-          />
+          <span className="analysis-legend analysis-legend--rk4" />
 
           RK4
         </div>
 
         <div>
-          <span className="analysis-axis-key">
-            X
-          </span>
-
-          Distance
+          X · Distance
         </div>
 
         <div>
-          <span className="analysis-axis-key">
-            Y
-          </span>
-
-          Power
+          Y · Power
         </div>
 
         <div>
-          <span className="analysis-axis-key">
-            Z
-          </span>
-
-          Derivative
+          Z · Derivative
         </div>
       </div>
     </section>

@@ -1,0 +1,907 @@
+/*
+ * ORBITAL SIGNAL LAB
+ * Presentation / Projection Theme
+ *
+ * Este arquivo sobrescreve somente
+ * estilos visuais do App.css.
+ */
+
+:root {
+  --background: #eef3f5;
+  --surface: #ffffff;
+  --surface-light: #f7fafb;
+  --card: #ffffff;
+
+  --border: rgba(25, 50, 61, 0.10);
+  --border-strong: rgba(25, 50, 61, 0.18);
+
+  --text: #15262f;
+  --muted: #667982;
+  --muted-light: #435861;
+
+  --cyan: #0c96a5;
+  --cyan-soft: rgba(12, 150, 165, 0.10);
+
+  --blue: #366cb8;
+  --amber: #b98229;
+
+  --danger: #c84e56;
+}
+
+html,
+body {
+  background: #eef3f5;
+}
+
+body {
+  color: var(--text);
+
+  background:
+    radial-gradient(
+      circle at 55% 5%,
+      rgba(12, 150, 165, 0.045),
+      transparent 27%
+    ),
+    #eef3f5;
+}
+
+/* ==========================================
+   APP
+========================================== */
+
+.app-shell {
+  background:
+    linear-gradient(
+      rgba(22, 53, 65, 0.025) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(22, 53, 65, 0.025) 1px,
+      transparent 1px
+    ),
+    #eef3f5;
+
+  background-size:
+    48px 48px,
+    48px 48px;
+}
+
+/* ==========================================
+   HEADER
+========================================== */
+
+.topbar {
+  height: 72px;
+
+  border-bottom:
+    1px solid rgba(25, 50, 61, 0.11);
+
+  background:
+    rgba(255, 255, 255, 0.96);
+
+  box-shadow:
+    0 3px 16px rgba(15, 35, 45, 0.035);
+
+  backdrop-filter:
+    blur(18px);
+}
+
+.brand__icon {
+  width: 40px;
+  height: 40px;
+
+  color: var(--cyan);
+
+  border:
+    1px solid rgba(12, 150, 165, 0.20);
+
+  background:
+    rgba(12, 150, 165, 0.06);
+}
+
+.brand__name {
+  color: #142a34;
+
+  font-size: 13px;
+
+  letter-spacing: 0.15em;
+}
+
+.brand__subtitle {
+  color: #74868e;
+
+  font-size: 9px;
+}
+
+.topbar__navigation-item {
+  color: #708189;
+
+  font-size: 9px;
+}
+
+.topbar__navigation-item:hover {
+  color: #1c3742;
+}
+
+.topbar__navigation-item--active {
+  color: var(--cyan);
+}
+
+.topbar__navigation-item--active::after {
+  background: var(--cyan);
+
+  box-shadow:
+    0 0 9px
+    rgba(12, 150, 165, 0.24);
+}
+
+.system-status {
+  color: #566a73;
+}
+
+.system-status__signal {
+  color: var(--cyan);
+
+  border:
+    1px solid rgba(12, 150, 165, 0.18);
+
+  background:
+    rgba(12, 150, 165, 0.045);
+}
+
+.system-status__label {
+  color: #7a8b92;
+
+  font-size: 8px;
+}
+
+.system-status__value {
+  color: #0a8794;
+
+  font-size: 9px;
+}
+
+.system-status__satellite {
+  color: #52666e;
+}
+
+/* ==========================================
+   DASHBOARD
+========================================== */
+
+.dashboard {
+  max-width: 1720px;
+
+  padding: 16px;
+}
+
+.dashboard__upper {
+  grid-template-columns:
+    minmax(250px, 0.72fr)
+    minmax(650px, 2.35fr)
+    minmax(250px, 0.72fr);
+
+  gap: 14px;
+}
+
+.dashboard__lower {
+  grid-template-columns:
+    minmax(620px, 1.22fr)
+    minmax(590px, 1fr);
+
+  gap: 14px;
+
+  margin-top: 14px;
+}
+
+/* ==========================================
+   PANELS
+========================================== */
+
+.panel,
+.metrics-section,
+.analysis-panel {
+  border:
+    1px solid rgba(25, 50, 61, 0.10);
+
+  background:
+    rgba(255, 255, 255, 0.97);
+
+  box-shadow:
+    0 6px 22px
+    rgba(26, 47, 57, 0.045);
+
+  border-radius: 7px;
+}
+
+.panel__heading,
+.section-heading,
+.analysis-panel__header {
+  min-height: 70px;
+
+  padding:
+    15px 18px;
+
+  border-bottom:
+    1px solid rgba(25, 50, 61, 0.09);
+}
+
+.panel__heading h2,
+.section-heading h2,
+.analysis-panel__header h2 {
+  color: #182f39;
+
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.panel__eyebrow {
+  color: #7b8d94;
+
+  font-size: 8px;
+
+  letter-spacing: 0.16em;
+}
+
+/* ==========================================
+   INPUT PANEL
+========================================== */
+
+.control-panel {
+  min-height: 560px;
+}
+
+.control-panel__fields {
+  gap: 14px;
+
+  padding:
+    18px 17px;
+}
+
+.control-field__header {
+  margin-bottom: 7px;
+
+  color: #4f626b;
+
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.control-field__symbol {
+  color: #087f8c;
+
+  font-size: 13px;
+}
+
+.control-field__input-wrapper {
+  height: 42px;
+
+  border:
+    1px solid rgba(31, 60, 72, 0.14);
+
+  border-radius: 4px;
+
+  background:
+    #f8fafb;
+}
+
+.control-field__input-wrapper:focus-within {
+  border-color:
+    rgba(12, 150, 165, 0.55);
+
+  background:
+    #ffffff;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(12, 150, 165, 0.08);
+}
+
+.control-field__input {
+  color: #172e38;
+
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.control-field__unit {
+  color: #788a92;
+
+  font-size: 9px;
+}
+
+.control-panel__actions {
+  padding:
+    4px 17px 17px;
+}
+
+.button {
+  height: 42px;
+
+  border-radius: 4px;
+
+  font-size: 9px;
+}
+
+.button--primary {
+  color: white;
+
+  background:
+    #0b919f;
+
+  box-shadow:
+    0 5px 14px
+    rgba(12, 150, 165, 0.16);
+}
+
+.button--primary:hover {
+  color: white;
+
+  background:
+    #087f8c;
+}
+
+.button--ghost {
+  color: #586c74;
+
+  border:
+    1px solid rgba(31, 60, 72, 0.15);
+
+  background:
+    #f8fafb;
+}
+
+.button--ghost:hover {
+  color: #087f8c;
+
+  border-color:
+    rgba(12, 150, 165, 0.35);
+
+  background:
+    #ffffff;
+}
+
+.control-panel__footer {
+  color: #71838b;
+
+  border-top:
+    1px solid rgba(25, 50, 61, 0.08);
+
+  font-size: 8px;
+}
+
+/* ==========================================
+   STATUS
+========================================== */
+
+.status-dot {
+  background:
+    #98a7ad;
+}
+
+.status-dot--cyan {
+  background:
+    #0b9ca9;
+
+  box-shadow:
+    0 0 7px
+    rgba(12, 150, 165, 0.42);
+}
+
+/* ==========================================
+   GLOBE - DARK FOCAL AREA
+========================================== */
+
+.globe-panel {
+  min-height: 560px;
+
+  border:
+    1px solid #17333d;
+
+  border-radius: 7px;
+
+  background:
+    #071318;
+
+  box-shadow:
+    0 8px 26px
+    rgba(12, 30, 38, 0.10);
+}
+
+.globe-panel__topbar {
+  min-height: 70px;
+
+  padding:
+    15px 18px;
+
+  border-bottom:
+    1px solid
+    rgba(186, 221, 230, 0.08);
+
+  background:
+    #0b1b21;
+}
+
+.globe-panel__topbar
+.panel__eyebrow {
+  color:
+    #76929b;
+}
+
+.globe-panel__topbar h2 {
+  color:
+    #e5eef0;
+
+  font-size:
+    15px;
+}
+
+.globe-panel__live {
+  color:
+    #8ca1a8;
+
+  font-size:
+    8px;
+}
+
+.globe-viewport {
+  min-height:
+    444px;
+
+  background:
+    radial-gradient(
+      circle at 52% 48%,
+      rgba(59, 165, 190, 0.12),
+      transparent 41%
+    ),
+    #050e12;
+}
+
+.globe-hud {
+  border:
+    1px solid
+    rgba(108, 220, 229, 0.18);
+
+  border-radius:
+    4px;
+
+  background:
+    rgba(7, 21, 27, 0.86);
+}
+
+.globe-hud span {
+  color:
+    #82969d;
+}
+
+.globe-hud strong {
+  color:
+    #e3ecee;
+
+  font-size:
+    10px;
+}
+
+.globe-distance span {
+  color:
+    #71858c;
+}
+
+.globe-distance strong {
+  color:
+    #edf4f5;
+
+  font-size:
+    13px;
+}
+
+.globe-scale {
+  color:
+    #758a91;
+}
+
+.globe-panel__footer {
+  min-height:
+    45px;
+
+  border-top:
+    1px solid
+    rgba(186, 221, 230, 0.07);
+
+  color:
+    #86999f;
+
+  background:
+    #09181e;
+
+  font-size:
+    7px;
+}
+
+/* ==========================================
+   TELEMETRY
+========================================== */
+
+.telemetry-panel {
+  min-height:
+    560px;
+}
+
+.satellite-identity {
+  padding:
+    18px 17px;
+
+  border-bottom:
+    1px solid
+    rgba(25, 50, 61, 0.08);
+}
+
+.satellite-identity__icon {
+  color:
+    #087f8c;
+
+  border:
+    1px solid
+    rgba(12, 150, 165, 0.16);
+
+  background:
+    rgba(12, 150, 165, 0.045);
+}
+
+.satellite-identity__code {
+  color:
+    #087f8c;
+
+  font-size:
+    8px;
+}
+
+.satellite-identity strong {
+  color:
+    #334b55;
+
+  font-size:
+    10px;
+}
+
+.telemetry-status {
+  color:
+    #697d85;
+
+  border-bottom:
+    1px solid
+    rgba(25, 50, 61, 0.08);
+
+  font-size:
+    8px;
+}
+
+.telemetry-row {
+  border-bottom:
+    1px solid
+    rgba(25, 50, 61, 0.07);
+}
+
+.telemetry-row__icon {
+  color:
+    #59717b;
+
+  border:
+    1px solid
+    rgba(25, 50, 61, 0.10);
+
+  background:
+    #f6f9fa;
+}
+
+.telemetry-row span {
+  color:
+    #788a92;
+
+  font-size:
+    8px;
+}
+
+.telemetry-row strong {
+  color:
+    #2c424c;
+
+  font-size:
+    10px;
+}
+
+.telemetry-panel__footer {
+  border:
+    1px solid
+    rgba(12, 150, 165, 0.13);
+
+  border-radius:
+    4px;
+
+  background:
+    rgba(12, 150, 165, 0.035);
+}
+
+.telemetry-panel__footer span {
+  color:
+    #73858c;
+}
+
+.telemetry-panel__footer strong {
+  color:
+    #087f8c;
+}
+
+/* ==========================================
+   METRICS
+========================================== */
+
+.metrics-section {
+  min-height:
+    300px;
+}
+
+.section-heading__status {
+  color:
+    #75878e;
+
+  font-size:
+    8px;
+}
+
+.metrics-grid {
+  min-height:
+    230px;
+
+  gap: 1px;
+
+  background:
+    rgba(31, 60, 72, 0.08);
+}
+
+.metric-card {
+  padding:
+    19px;
+
+  background:
+    #ffffff;
+}
+
+.metric-card::before {
+  height:
+    3px;
+
+  width:
+    40px;
+
+  background:
+    #0b9ca9;
+}
+
+.metric-card--blue::before {
+  background:
+    #366cb8;
+}
+
+.metric-card--amber::before {
+  background:
+    #b98229;
+}
+
+.metric-card__top {
+  color:
+    #75878f;
+
+  font-size:
+    8px;
+}
+
+.metric-card__icon {
+  color:
+    #5d737c;
+}
+
+.metric-card__value {
+  margin-top:
+    43px;
+
+  color:
+    #18313b;
+
+  font-size:
+    clamp(
+      27px,
+      2.2vw,
+      38px
+    );
+
+  font-weight:
+    500;
+}
+
+.metric-card__value span {
+  color:
+    #72858d;
+
+  font-size:
+    9px;
+}
+
+.metric-card__description {
+  color:
+    #6d8088;
+
+  font-size:
+    8px;
+}
+
+/* ==========================================
+   PLOTLY PANEL
+========================================== */
+
+.analysis-panel {
+  min-height:
+    300px;
+}
+
+.analysis-panel__mode {
+  color:
+    #667b83;
+
+  font-size:
+    8px;
+}
+
+.analysis-plot-wrapper {
+  min-height:
+    230px;
+
+  background:
+    radial-gradient(
+      circle at 50% 48%,
+      rgba(12, 150, 165, 0.035),
+      transparent 60%
+    ),
+    #fbfcfc;
+}
+
+.analysis-interaction {
+  padding:
+    5px 7px;
+
+  border-radius:
+    3px;
+
+  color:
+    #71848c;
+
+  background:
+    rgba(255, 255, 255, 0.78);
+
+  font-size:
+    7px;
+}
+
+.analysis-panel__legend {
+  min-height:
+    42px;
+
+  color:
+    #657981;
+
+  border-top:
+    1px solid
+    rgba(25, 50, 61, 0.08);
+
+  background:
+    #fafcfc;
+
+  font-size:
+    7px;
+}
+
+.analysis-axis-key {
+  color:
+    #087f8c;
+
+  border:
+    1px solid
+    rgba(12, 150, 165, 0.18);
+
+  background:
+    rgba(12, 150, 165, 0.045);
+}
+
+/* ==========================================
+   LARGE SCREEN / PROJECTOR
+========================================== */
+
+@media (
+  min-width: 1500px
+) {
+  .dashboard {
+    padding:
+      18px 22px;
+  }
+
+  .dashboard__upper {
+    grid-template-columns:
+      270px
+      minmax(760px, 1fr)
+      270px;
+  }
+
+  .control-field__header {
+    font-size:
+      11px;
+  }
+
+  .control-field__input {
+    font-size:
+      13px;
+  }
+
+  .telemetry-row span {
+    font-size:
+      9px;
+  }
+
+  .telemetry-row strong {
+    font-size:
+      11px;
+  }
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media (
+  max-width: 1250px
+) {
+  .dashboard__upper {
+    grid-template-columns:
+      minmax(230px, 0.72fr)
+      minmax(520px, 1.8fr);
+  }
+
+  .telemetry-panel {
+    grid-column:
+      1 / -1;
+  }
+
+  .dashboard__lower {
+    grid-template-columns:
+      1fr;
+  }
+}
+
+@media (
+  max-width: 880px
+) {
+  .dashboard__upper {
+    grid-template-columns:
+      1fr;
+  }
+
+  .control-panel__fields {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+  .metrics-grid {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+}
+
+@media (
+  max-width: 560px
+) {
+  .control-panel__fields,
+  .metrics-grid {
+    grid-template-columns:
+      1fr;
+  }
+}

@@ -29,7 +29,9 @@ interface NumberFieldProps {
   step?: number;
   min?: number;
 
-  onChange: (value: number) => void;
+  onChange: (
+    value: number,
+  ) => void;
 }
 
 function NumberField({
@@ -44,7 +46,9 @@ function NumberField({
   return (
     <label className="control-field">
       <div className="control-field__header">
-        <span>{label}</span>
+        <span>
+          {label}
+        </span>
 
         <span className="control-field__symbol">
           {symbol}
@@ -58,8 +62,14 @@ function NumberField({
           min={min}
           step={step}
           value={value}
-          onChange={(event) =>
-            onChange(Number(event.target.value))
+          onChange={(
+            event,
+          ) =>
+            onChange(
+              Number(
+                event.target.value,
+              ),
+            )
           }
         />
 
@@ -84,62 +94,89 @@ function ControlPanel({
       <div className="panel__heading">
         <div>
           <span className="panel__eyebrow">
-            MISSION INPUT
+            SIMULATION
           </span>
 
-          <h2>Simulation Parameters</h2>
+          <h2>
+            Model Parameters
+          </h2>
         </div>
 
         <SlidersHorizontal
-          size={18}
+          size={17}
           strokeWidth={1.5}
         />
       </div>
 
       <div className="control-panel__fields">
         <NumberField
-          label="Initial power"
+          label="Power"
           symbol="P₀"
           unit="W"
-          value={inputs.initialPower}
+          value={
+            inputs.initialPower
+          }
           min={0.1}
           step={1}
-          onChange={(value) =>
-            onChange('initialPower', value)
+          onChange={(
+            value,
+          ) =>
+            onChange(
+              'initialPower',
+              value,
+            )
           }
         />
 
         <NumberField
-          label="Reference distance"
+          label="Reference"
           symbol="r₀"
           unit="km"
-          value={inputs.referenceDistance}
+          value={
+            inputs.referenceDistance
+          }
           min={1}
           step={10}
-          onChange={(value) =>
-            onChange('referenceDistance', value)
+          onChange={(
+            value,
+          ) =>
+            onChange(
+              'referenceDistance',
+              value,
+            )
           }
         />
 
         <NumberField
-          label="Final distance"
+          label="Distance"
           symbol="r"
           unit="km"
-          value={inputs.finalDistance}
+          value={
+            inputs.finalDistance
+          }
           min={1}
           step={100}
-          onChange={(value) =>
-            onChange('finalDistance', value)
+          onChange={(
+            value,
+          ) =>
+            onChange(
+              'finalDistance',
+              value,
+            )
           }
         />
 
         <NumberField
-          label="Attenuation coefficient"
+          label="Coefficient"
           symbol="k"
-          value={inputs.attenuationCoefficient}
+          value={
+            inputs.attenuationCoefficient
+          }
           min={0.1}
           step={0.1}
-          onChange={(value) =>
+          onChange={(
+            value,
+          ) =>
             onChange(
               'attenuationCoefficient',
               value,
@@ -148,14 +185,21 @@ function ControlPanel({
         />
 
         <NumberField
-          label="Numerical step"
+          label="RK4 step"
           symbol="Δr"
           unit="km"
-          value={inputs.numericalStep}
+          value={
+            inputs.numericalStep
+          }
           min={1}
           step={1}
-          onChange={(value) =>
-            onChange('numericalStep', value)
+          onChange={(
+            value,
+          ) =>
+            onChange(
+              'numericalStep',
+              value,
+            )
           }
         />
       </div>
@@ -166,9 +210,12 @@ function ControlPanel({
           type="button"
           onClick={onSimulate}
         >
-          <Play size={15} fill="currentColor" />
+          <Play
+            size={14}
+            fill="currentColor"
+          />
 
-          Run simulation
+          Simulate
         </button>
 
         <button
@@ -177,14 +224,16 @@ function ControlPanel({
           onClick={onReset}
           title="Reset parameters"
         >
-          <RotateCcw size={16} />
+          <RotateCcw
+            size={15}
+          />
         </button>
       </div>
 
       <div className="control-panel__footer">
         <span className="status-dot status-dot--cyan" />
 
-        MODEL READY
+        dP/dr = −kP/r
       </div>
     </aside>
   );

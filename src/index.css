@@ -8,85 +8,99 @@
     "Segoe UI",
     sans-serif;
 
-  color: #e8f0f3;
-  background: #071014;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 
-  --background: #071014;
-  --surface: #0a151a;
-  --surface-light: #0d1b21;
-  --card: #0e1d24;
+  --cyan: #61d8dc;
+  --blue: #4f83d7;
+  --amber: #d8a650;
+  --danger: #df6368;
 
-  --border: rgba(198, 225, 232, 0.08);
-  --border-strong: rgba(198, 225, 232, 0.13);
+  --text: #e5edef;
+  --muted: #73868e;
 
-  --text: #e8f0f3;
-  --muted: #75868e;
-  --muted-light: #9aabb2;
+  --border:
+    rgba(
+      190,
+      222,
+      230,
+      0.09
+    );
 
-  --cyan: #68e4e7;
-  --cyan-soft: rgba(104, 228, 231, 0.14);
-
-  --blue: #4aa6d4;
-  --amber: #d8a654;
-
-  --danger: #e15c62;
+  --border-strong:
+    rgba(
+      190,
+      222,
+      230,
+      0.15
+    );
 }
 
 * {
-  box-sizing: border-box;
-}
-
-html {
-  background: var(--background);
+  box-sizing:
+    border-box;
 }
 
 html,
 body,
 #root {
   width: 100%;
-  min-width: 320px;
-  min-height: 100%;
-  margin: 0;
+
+  min-width:
+    320px;
+
+  min-height:
+    100%;
+
+  margin:
+    0;
 }
 
 body {
-  min-height: 100vh;
-  overflow-x: hidden;
-  background:
-    radial-gradient(
-      circle at 58% 10%,
-      rgba(56, 126, 148, 0.08),
-      transparent 28%
-    ),
-    var(--background);
+  min-height:
+    100vh;
 
-  color: var(--text);
+  overflow-x:
+    hidden;
+
+  color:
+    var(--text);
+
+  background:
+    #465057;
 }
 
 button,
 input {
-  font: inherit;
+  font:
+    inherit;
 }
 
 button {
-  border: 0;
+  border:
+    0;
 }
 
 button,
 input {
-  outline: none;
+  outline:
+    none;
 }
 
 button:focus-visible,
 input:focus-visible {
-  outline: 1px solid var(--cyan);
-  outline-offset: 2px;
+  outline:
+    1px solid
+    var(--cyan);
+
+  outline-offset:
+    2px;
 }
 
 ::selection {
-  color: #061113;
-  background: var(--cyan);
+  color:
+    #041114;
+
+  background:
+    var(--cyan);
 }
