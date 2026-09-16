@@ -1,0 +1,744 @@
+/*
+ * ORBITAL SIGNAL LAB
+ * Final Visual Tuning
+ *
+ * Glassmorphism + Globe Exposure
+ * inspirado no dashboard de referência.
+ */
+
+/* =========================================================
+   GLOBE / SPACE EXPOSURE
+========================================================= */
+
+.globe-viewport {
+  background:
+    radial-gradient(
+      circle at 52% 45%,
+      rgba(75, 181, 211, 0.16),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(22, 73, 92, 0.14),
+      transparent 66%
+    ),
+    #071216;
+}
+
+.globe-viewport canvas {
+  display: block;
+
+  filter:
+    brightness(1.16)
+    saturate(1.11)
+    contrast(1.025);
+}
+
+/*
+ * Luz azul atmosférica adicional.
+ */
+.globe-viewport::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  z-index: 1;
+
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      circle at 52% 48%,
+      rgba(103, 211, 233, 0.10) 0%,
+      rgba(62, 157, 184, 0.055) 30%,
+      transparent 56%
+    );
+
+  mix-blend-mode: screen;
+}
+
+/*
+ * Vinheta mais leve.
+ */
+.globe-viewport::after {
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(5, 14, 18, 0.01),
+      transparent 55%,
+      rgba(5, 14, 18, 0.30) 100%
+    );
+}
+
+/* =========================================================
+   GLOBAL GLASS SYSTEM
+========================================================= */
+
+/*
+ * Painéis principais.
+ *
+ * A combinação de:
+ * - rgba
+ * - backdrop-filter
+ * - borda clara
+ * produz o vidro fumê.
+ */
+
+.panel,
+.metrics-section,
+.analysis-panel,
+.dock-object {
+  position: relative;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(36, 63, 73, 0.24) 0%,
+      rgba(11, 28, 35, 0.50) 42%,
+      rgba(8, 22, 28, 0.58) 100%
+    );
+
+  border:
+    1px solid
+    rgba(173, 216, 226, 0.12);
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.035),
+    0 10px 32px
+      rgba(0, 0, 0, 0.14);
+
+  backdrop-filter:
+    blur(18px)
+    saturate(125%);
+
+  -webkit-backdrop-filter:
+    blur(18px)
+    saturate(125%);
+}
+
+/*
+ * Brilho muito discreto no topo do vidro.
+ */
+.panel::before,
+.metrics-section::before,
+.analysis-panel::before,
+.dock-object::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 8%;
+  right: 8%;
+
+  height: 1px;
+
+  z-index: 5;
+
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(198, 235, 241, 0.11),
+      transparent
+    );
+}
+
+/* =========================================================
+   PANEL HEADERS
+========================================================= */
+
+.panel__heading,
+.section-heading,
+.analysis-panel__header {
+  position: relative;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(26, 49, 58, 0.24),
+      rgba(7, 21, 27, 0.08)
+    );
+
+  border-bottom:
+    1px solid
+    rgba(179, 216, 225, 0.075);
+}
+
+/*
+ * Separador iluminado bem sutil.
+ */
+.panel__heading::after,
+.section-heading::after,
+.analysis-panel__header::after {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  bottom: -1px;
+
+  width: 34px;
+  height: 1px;
+
+  background:
+    rgba(97, 216, 220, 0.43);
+}
+
+/* =========================================================
+   LEFT CONTROL PANEL GLASS
+========================================================= */
+
+.control-panel {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(27, 55, 64, 0.37),
+      rgba(8, 24, 30, 0.60)
+    );
+}
+
+.control-field__input-wrapper {
+  background:
+    rgba(3, 14, 18, 0.37);
+
+  border-color:
+    rgba(161, 202, 213, 0.105);
+
+  box-shadow:
+    inset 0 1px 6px
+      rgba(0, 0, 0, 0.13);
+
+  backdrop-filter:
+    blur(8px);
+
+  -webkit-backdrop-filter:
+    blur(8px);
+}
+
+.control-field__input-wrapper:hover {
+  border-color:
+    rgba(97, 216, 220, 0.20);
+
+  background:
+    rgba(5, 20, 25, 0.48);
+}
+
+.control-field__input-wrapper:focus-within {
+  border-color:
+    rgba(97, 216, 220, 0.50);
+
+  background:
+    rgba(6, 24, 29, 0.56);
+
+  box-shadow:
+    0 0 0 2px
+      rgba(97, 216, 220, 0.045),
+    inset 0 1px 8px
+      rgba(0, 0, 0, 0.13);
+}
+
+/* =========================================================
+   RIGHT TELEMETRY PANEL
+========================================================= */
+
+.telemetry-panel {
+  background:
+    linear-gradient(
+      150deg,
+      rgba(27, 54, 64, 0.36),
+      rgba(8, 24, 30, 0.59)
+    );
+}
+
+.satellite-identity {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(97, 216, 220, 0.018),
+      rgba(255, 255, 255, 0.012)
+    );
+}
+
+.satellite-identity__icon {
+  background:
+    radial-gradient(
+      circle,
+      rgba(97, 216, 220, 0.105),
+      rgba(97, 216, 220, 0.015) 65%
+    );
+
+  border-color:
+    rgba(97, 216, 220, 0.20);
+
+  box-shadow:
+    inset 0 0 14px
+      rgba(97, 216, 220, 0.035);
+}
+
+.telemetry-row__icon {
+  background:
+    rgba(4, 18, 23, 0.22);
+
+  border-color:
+    rgba(166, 206, 216, 0.10);
+}
+
+.telemetry-panel__footer {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(97, 216, 220, 0.025),
+      rgba(97, 216, 220, 0.055)
+    );
+
+  border-color:
+    rgba(97, 216, 220, 0.15);
+}
+
+/* =========================================================
+   SIGNAL BAR
+========================================================= */
+
+.signal-quality__track {
+  background:
+    rgba(255, 255, 255, 0.055);
+
+  box-shadow:
+    inset 0 1px 3px
+      rgba(0, 0, 0, 0.30);
+}
+
+/* =========================================================
+   BOTTOM GLASS DOCK
+========================================================= */
+
+.mission-bottom-dock {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(26, 49, 58, 0.48),
+      rgba(9, 23, 29, 0.65)
+    );
+
+  border:
+    1px solid
+    rgba(182, 218, 227, 0.11);
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.035),
+    0 14px 38px
+      rgba(0, 0, 0, 0.18);
+
+  backdrop-filter:
+    blur(22px)
+    saturate(125%);
+
+  -webkit-backdrop-filter:
+    blur(22px)
+    saturate(125%);
+}
+
+/*
+ * Painéis dentro da dock precisam ser
+ * ainda mais transparentes para não
+ * parecerem caixas dentro de outra caixa.
+ */
+
+.mission-bottom-dock
+.dock-object,
+.mission-bottom-dock
+.metrics-section,
+.mission-bottom-dock
+.analysis-panel {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(21, 47, 56, 0.30),
+      rgba(7, 22, 27, 0.40)
+    );
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.025);
+
+  backdrop-filter:
+    blur(12px);
+
+  -webkit-backdrop-filter:
+    blur(12px);
+}
+
+/* =========================================================
+   METRIC CARDS
+========================================================= */
+
+.metrics-grid {
+  background:
+    rgba(170, 209, 219, 0.055);
+}
+
+.metric-card {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(14, 35, 43, 0.40),
+      rgba(6, 21, 27, 0.27)
+    );
+
+  backdrop-filter:
+    blur(10px);
+
+  -webkit-backdrop-filter:
+    blur(10px);
+}
+
+.metric-card:hover {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(22, 46, 55, 0.48),
+      rgba(8, 25, 31, 0.33)
+    );
+}
+
+.metric-card__value {
+  text-shadow:
+    0 0 15px
+    rgba(255, 255, 255, 0.04);
+}
+
+/* =========================================================
+   ISS MINI PANEL
+========================================================= */
+
+.dock-object__visual {
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(97, 216, 220, 0.075),
+      rgba(97, 216, 220, 0.015) 43%,
+      transparent 70%
+    );
+}
+
+.dock-object__visual svg {
+  filter:
+    drop-shadow(
+      0 0 9px
+      rgba(97, 216, 220, 0.11)
+    );
+}
+
+/* =========================================================
+   PLOTLY CONTAINER
+========================================================= */
+
+.analysis-plot-wrapper {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(8, 26, 32, 0.30),
+      rgba(5, 20, 25, 0.48)
+    );
+}
+
+.analysis-interaction {
+  color:
+    #91a7ad;
+
+  background:
+    rgba(8, 23, 29, 0.55);
+
+  border-color:
+    rgba(171, 211, 220, 0.10);
+
+  backdrop-filter:
+    blur(9px);
+
+  -webkit-backdrop-filter:
+    blur(9px);
+}
+
+.analysis-panel__legend {
+  background:
+    rgba(4, 17, 22, 0.22);
+
+  border-top-color:
+    rgba(170, 209, 219, 0.065);
+}
+
+/* =========================================================
+   FLOATING GLOBE HUD
+========================================================= */
+
+.globe-hud {
+  border-color:
+    rgba(97, 216, 220, 0.18);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(24, 50, 59, 0.47),
+      rgba(5, 21, 27, 0.64)
+    );
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.025),
+    0 8px 24px
+      rgba(0, 0, 0, 0.17);
+
+  backdrop-filter:
+    blur(14px)
+    saturate(120%);
+
+  -webkit-backdrop-filter:
+    blur(14px)
+    saturate(120%);
+}
+
+.globe-hud strong {
+  color:
+    #f0f7f8;
+}
+
+.globe-distance strong {
+  color:
+    #f2f8f9;
+}
+
+.globe-model-status {
+  color:
+    #a6bac0;
+}
+
+/* =========================================================
+   ICON LIGHT
+========================================================= */
+
+.globe-hud--satellite
+.globe-hud__icon {
+  color:
+    #7ce8eb;
+
+  filter:
+    drop-shadow(
+      0 0 5px
+      rgba(97, 216, 220, 0.40)
+    );
+}
+
+.globe-hud--station
+.globe-hud__icon {
+  color:
+    #efbf58;
+
+  filter:
+    drop-shadow(
+      0 0 5px
+      rgba(239, 191, 88, 0.32)
+    );
+}
+
+/* =========================================================
+   HEADER GLASS
+========================================================= */
+
+.topbar {
+  background:
+    rgba(5, 17, 22, 0.82);
+
+  backdrop-filter:
+    blur(22px)
+    saturate(125%);
+
+  -webkit-backdrop-filter:
+    blur(22px)
+    saturate(125%);
+
+  box-shadow:
+    inset 0 -1px 0
+      rgba(181, 220, 229, 0.05);
+}
+
+.topbar__navigation {
+  background:
+    rgba(29, 50, 59, 0.40);
+
+  backdrop-filter:
+    blur(12px);
+
+  -webkit-backdrop-filter:
+    blur(12px);
+}
+
+.topbar__navigation-item--active {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(92, 126, 138, 0.26),
+      rgba(41, 67, 76, 0.28)
+    );
+}
+
+/* =========================================================
+   LIGHT THEME GLASS
+========================================================= */
+
+.app-shell[data-theme="light"]
+.panel,
+.app-shell[data-theme="light"]
+.metrics-section,
+.app-shell[data-theme="light"]
+.analysis-panel,
+.app-shell[data-theme="light"]
+.dock-object {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.72),
+      rgba(234, 242, 245, 0.57)
+    );
+
+  border-color:
+    rgba(46, 80, 92, 0.12);
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.82),
+    0 10px 28px
+      rgba(35, 55, 65, 0.07);
+
+  backdrop-filter:
+    blur(19px)
+    saturate(112%);
+
+  -webkit-backdrop-filter:
+    blur(19px)
+    saturate(112%);
+}
+
+.app-shell[data-theme="light"]
+.mission-bottom-dock {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(249, 252, 253, 0.75),
+      rgba(229, 238, 242, 0.66)
+    );
+
+  border-color:
+    rgba(42, 74, 86, 0.12);
+}
+
+.app-shell[data-theme="light"]
+.mission-bottom-dock
+.metric-card {
+  background:
+    rgba(255, 255, 255, 0.48);
+}
+
+.app-shell[data-theme="light"]
+.control-field__input-wrapper {
+  background:
+    rgba(255, 255, 255, 0.50);
+
+  border-color:
+    rgba(48, 82, 94, 0.13);
+}
+
+.app-shell[data-theme="light"]
+.topbar {
+  background:
+    rgba(247, 251, 252, 0.80);
+
+  border-bottom-color:
+    rgba(40, 70, 82, 0.10);
+}
+
+.app-shell[data-theme="light"]
+.topbar__navigation {
+  background:
+    rgba(231, 239, 242, 0.62);
+}
+
+.app-shell[data-theme="light"]
+.topbar__navigation-item--active {
+  background:
+    rgba(255, 255, 255, 0.65);
+}
+
+.app-shell[data-theme="light"]
+.analysis-plot-wrapper {
+  background:
+    rgba(247, 250, 251, 0.55);
+}
+
+/*
+ * O globo continua escuro mesmo no tema light.
+ */
+.app-shell[data-theme="light"]
+.globe-viewport {
+  background:
+    radial-gradient(
+      circle at 52% 45%,
+      rgba(75, 181, 211, 0.17),
+      transparent 41%
+    ),
+    #071216;
+}
+
+.app-shell[data-theme="light"]
+.globe-viewport canvas {
+  filter:
+    brightness(1.18)
+    saturate(1.10)
+    contrast(1.025);
+}
+
+/* =========================================================
+   LARGE PRESENTATION SCREEN
+========================================================= */
+
+@media (min-width: 1400px) {
+  .panel,
+  .metrics-section,
+  .analysis-panel,
+  .dock-object {
+    backdrop-filter:
+      blur(20px)
+      saturate(130%);
+
+    -webkit-backdrop-filter:
+      blur(20px)
+      saturate(130%);
+  }
+
+  .globe-distance span,
+  .globe-model-status,
+  .globe-scale {
+    font-size:
+      7px;
+  }
+
+  .globe-distance strong {
+    font-size:
+      12px;
+  }
+
+  .globe-hud span {
+    font-size:
+      7px;
+  }
+
+  .globe-hud strong {
+    font-size:
+      9px;
+  }
+}
