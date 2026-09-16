@@ -1,0 +1,38 @@
+/* =========================================================
+   MODEL WORKSPACE
+========================================================= */
+
+.mission-stage--model {
+  height:
+    min(
+      850px,
+      calc(
+        100vh - 132px
+      )
+    );
+
+  min-height:
+    750px;
+
+  overflow:
+    hidden;
+
+  background:
+    #071317;
+}
+
+.app-shell[
+  data-theme="light"
+]
+.mission-stage--model {
+  background:
+    #edf3f5;
+}
+
+.topbar__navigation-item:disabled {
+  cursor:
+    not-allowed;
+
+  opacity:
+    0.38;
+}

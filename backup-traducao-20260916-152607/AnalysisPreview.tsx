@@ -51,10 +51,10 @@ function buildHoverText(
 
       return [
         `<b>${method}</b>`,
-        `<b>Distância:</b> ${point.distance.toFixed(2)} km`,
-        `<b>Potência:</b> ${point.power.toFixed(6)} W`,
+        `<b>Distance:</b> ${point.distance.toFixed(2)} km`,
+        `<b>Power:</b> ${point.power.toFixed(6)} W`,
         `<b>dP/dr:</b> ${point.derivative.toExponential(5)} W/km`,
-        `<b>Atenuação:</b> ${attenuation.toFixed(3)} %`,
+        `<b>Attenuation:</b> ${attenuation.toFixed(3)} %`,
       ].join(
         '<br>',
       );
@@ -105,14 +105,14 @@ function AnalysisPreview({
     buildHoverText(
       analyticalPoints,
       initialPower,
-      'Solução analítica',
+      'Analytical solution',
     );
 
   const numericalHover =
     buildHoverText(
       numericalPoints,
       initialPower,
-      'Solução numérica RK4',
+      'RK4 numerical solution',
     );
 
   return (
@@ -120,11 +120,11 @@ function AnalysisPreview({
       <div className="analysis-panel__header">
         <div>
           <span className="panel__eyebrow">
-            ANÁLISE DA EDO
+            EDO ANALYSIS
           </span>
 
           <h2>
-            Espaço de Fase 3D
+            3D Phase Space
           </h2>
         </div>
 
@@ -146,7 +146,7 @@ function AnalysisPreview({
                 'lines',
 
               name:
-                'Analítica',
+                'Analytical',
 
               x:
                 analyticalPoints.map(
@@ -298,7 +298,7 @@ function AnalysisPreview({
               xaxis: {
                 title: {
                   text:
-                    'Distância r',
+                    'Distance r',
 
                   font: {
                     color:
@@ -336,7 +336,7 @@ function AnalysisPreview({
               yaxis: {
                 title: {
                   text:
-                    'Potência P(r)',
+                    'Power P(r)',
 
                   font: {
                     color:
@@ -433,7 +433,7 @@ function AnalysisPreview({
             size={12}
           />
 
-          GIRAR · ZOOM
+          ROTATE · ZOOM
         </div>
       </div>
 
@@ -441,7 +441,7 @@ function AnalysisPreview({
         <div>
           <span className="analysis-legend analysis-legend--analytical" />
 
-          Analítica
+          Analytical
         </div>
 
         <div>
@@ -451,15 +451,15 @@ function AnalysisPreview({
         </div>
 
         <div>
-          X · Distância
+          X · Distance
         </div>
 
         <div>
-          Y · Potência
+          Y · Power
         </div>
 
         <div>
-          Z · Derivada
+          Z · Derivative
         </div>
       </div>
     </section>

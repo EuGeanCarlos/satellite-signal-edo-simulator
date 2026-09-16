@@ -1,0 +1,3459 @@
+﻿============================================================
+ARQUIVOS PARA TRADUÇÃO DA INTERFACE
+Data: 09/16/2026 15:23:47
+============================================================
+
+============================================================
+ARQUIVO: C:\projetos\satellite-signal-edo-simulator\src\components\layout\Header.tsx
+============================================================
+
+import {
+  Activity,
+  Moon,
+  Orbit,
+  Satellite,
+  Sun,
+} from 'lucide-react';
+
+export type AppSection =
+  | 'Overview'
+  | 'Model'
+  | 'Simulation';
+
+type ThemeMode =
+  | 'dark'
+  | 'light';
+
+interface HeaderProps {
+  activeSection: AppSection;
+
+  theme: ThemeMode;
+
+  onSectionChange: (
+    section: AppSection,
+  ) => void;
+
+  onToggleTheme: () => void;
+}
+
+function Header({
+  activeSection,
+  theme,
+  onSectionChange,
+  onToggleTheme,
+}: HeaderProps) {
+  const navigation: AppSection[] = [
+    'Overview',
+    'Model',
+    'Simulation',
+  ];
+
+  return (
+    <header className="topbar">
+      <div className="brand">
+        <div className="brand__icon">
+          <Orbit
+            size={19}
+            strokeWidth={1.7}
+          />
+        </div>
+
+        <div>
+          <div className="brand__name">
+            ORBITAL
+
+            <span>
+              SIGNAL LAB
+            </span>
+          </div>
+
+          <div className="brand__subtitle">
+            Differential Equation
+            Mission Control
+          </div>
+        </div>
+      </div>
+
+      <nav
+        className="topbar__navigation"
+        aria-label="Main navigation"
+      >
+        {navigation.map(
+          (item) => {
+            const isActive =
+              activeSection === item;
+
+            const isDisabled =
+              item === 'Simulation';
+
+            return (
+              <button
+                type="button"
+                key={item}
+                disabled={isDisabled}
+                title={
+                  isDisabled
+                    ? 'Simulation workspace will be added next'
+                    : undefined
+                }
+                className={
+                  isActive
+                    ? 'topbar__navigation-item topbar__navigation-item--active'
+                    : 'topbar__navigation-item'
+                }
+                onClick={() => {
+                  if (!isDisabled) {
+                    onSectionChange(
+                      item,
+                    );
+                  }
+                }}
+              >
+                {item}
+              </button>
+            );
+          },
+        )}
+      </nav>
+
+      <div className="topbar__actions">
+        <div className="system-status">
+          <div className="system-status__signal">
+            <Activity
+              size={14}
+            />
+          </div>
+
+          <div>
+            <span className="system-status__label">
+              SYSTEM
+            </span>
+
+            <span className="system-status__value">
+              ONLINE
+            </span>
+          </div>
+
+          <Satellite
+            className="system-status__satellite"
+            size={17}
+            strokeWidth={1.5}
+          />
+        </div>
+
+        <button
+          type="button"
+          className="topbar__icon-button"
+          onClick={onToggleTheme}
+          title={
+            theme === 'dark'
+              ? 'Switch to light theme'
+              : 'Switch to dark theme'
+          }
+          aria-label="Toggle color theme"
+        >
+          {theme === 'dark'
+            ? (
+              <Sun
+                size={16}
+              />
+            )
+            : (
+              <Moon
+                size={16}
+              />
+            )}
+        </button>
+      </div>
+    </header>
+  );
+}
+
+export default Header;
+
+============================================================
+ARQUIVO: C:\projetos\satellite-signal-edo-simulator\src\components\layout\Dashboard.tsx
+============================================================
+
+import {
+  useMemo,
+  useState,
+} from 'react';
+
+import {
+  Activity,
+  Radio,
+  Satellite,
+  Sigma,
+  TrendingDown,
+} from 'lucide-react';
+
+import AnalysisPreview
+  from '../charts/AnalysisPreview';
+
+import GlobeScene
+  from '../globe/GlobeScene';
+
+import ModelView
+  from '../model/ModelView';
+
+import ControlPanel
+  from '../simulation/ControlPanel';
+
+import MetricCard
+  from '../simulation/MetricCard';
+
+import SatelliteTelemetry
+  from '../simulation/SatelliteTelemetry';
+
+import Header, {
+  type AppSection,
+} from './Header';
+
+import {
+  attenuationPercent,
+  generateAnalyticalSolution,
+} from '../../lib/ode';
+
+import {
+  solveRK4,
+} from '../../lib/rk4';
+
+import type {
+  SimulationField,
+  SimulationInputs,
+  SimulationResult,
+} from '../../types/simulation';
+
+type ThemeMode =
+  | 'dark'
+  | 'light';
+
+interface DashboardProps {
+  inputs:
+    SimulationInputs;
+
+  onInputChange: (
+    field:
+      SimulationField,
+
+    value:
+      number,
+  ) => void;
+
+  onReset:
+    () => void;
+}
+
+const ISS_IMAGE_PATH =
+  `${import.meta.env.BASE_URL}iss.jpg`;
+
+function calculateSimulation(
+  inputs:
+    SimulationInputs,
+): SimulationResult {
+  const analyticalPoints =
+    generateAnalyticalSolution(
+      inputs,
+    );
+
+  const numericalPoints =
+    solveRK4(
+      inputs,
+    );
+
+  const analyticalFinal =
+    analyticalPoints[
+      analyticalPoints.length -
+      1
+    ];
+
+  const numericalFinal =
+    numericalPoints[
+      numericalPoints.length -
+      1
+    ];
+
+  const analyticalPower =
+    analyticalFinal?.power ??
+    0;
+
+  const numericalPower =
+    numericalFinal?.power ??
+    0;
+
+  const derivative =
+    analyticalFinal?.derivative ??
+    0;
+
+  const absoluteError =
+    Math.abs(
+      analyticalPower -
+      numericalPower,
+    );
+
+  const relativeErrorPercent =
+    analyticalPower !== 0
+      ? (
+          absoluteError /
+          Math.abs(
+            analyticalPower,
+          )
+        ) *
+        100
+      : 0;
+
+  return {
+    analyticalPoints,
+    numericalPoints,
+
+    analyticalPower,
+    numericalPower,
+
+    attenuationPercent:
+      attenuationPercent(
+        inputs.initialPower,
+        analyticalPower,
+      ),
+
+    derivative,
+
+    absoluteError,
+    relativeErrorPercent,
+  };
+}
+
+function Dashboard({
+  inputs,
+  onInputChange,
+  onReset,
+}: DashboardProps) {
+  const [
+    activeSection,
+    setActiveSection,
+  ] =
+    useState<AppSection>(
+      'Overview',
+    );
+
+  const [
+    simulationActive,
+    setSimulationActive,
+  ] =
+    useState(
+      false,
+    );
+
+  const [
+    theme,
+    setTheme,
+  ] =
+    useState<ThemeMode>(
+      'dark',
+    );
+
+  const simulation =
+    useMemo(
+      () =>
+        calculateSimulation(
+          inputs,
+        ),
+      [
+        inputs,
+      ],
+    );
+
+  const signalStrength =
+    useMemo(
+      () => {
+        if (
+          inputs.initialPower <=
+          0
+        ) {
+          return 0;
+        }
+
+        return Math.max(
+          0,
+          Math.min(
+            1,
+            simulation.analyticalPower /
+              inputs.initialPower,
+          ),
+        );
+      },
+      [
+        inputs.initialPower,
+        simulation.analyticalPower,
+      ],
+    );
+
+  const signalLabel =
+    signalStrength >= 0.5
+      ? 'STRONG'
+      : signalStrength >= 0.2
+        ? 'MODERATE'
+        : signalStrength >= 0.05
+          ? 'WEAK'
+          : 'CRITICAL';
+
+  function handleSimulate() {
+    setSimulationActive(
+      true,
+    );
+  }
+
+  function handleReset() {
+    setSimulationActive(
+      false,
+    );
+
+    onReset();
+  }
+
+  function handleToggleTheme() {
+    setTheme(
+      (
+        current,
+      ) =>
+        current === 'dark'
+          ? 'light'
+          : 'dark',
+    );
+  }
+
+  return (
+    <div
+      className="app-shell"
+      data-theme={theme}
+    >
+      <section className="mission-shell">
+        <Header
+          activeSection={
+            activeSection
+          }
+          theme={theme}
+          onSectionChange={
+            setActiveSection
+          }
+          onToggleTheme={
+            handleToggleTheme
+          }
+        />
+
+        {activeSection ===
+        'Model'
+          ? (
+            <main className="mission-stage mission-stage--model">
+              <ModelView
+                inputs={inputs}
+                receivedPower={
+                  simulation
+                    .analyticalPower
+                }
+              />
+            </main>
+          )
+          : (
+            <main className="mission-stage">
+              <GlobeScene
+                inputs={inputs}
+                simulationActive={
+                  simulationActive
+                }
+                signalStrength={
+                  signalStrength
+                }
+              />
+
+              <div className="mission-overlay mission-overlay--left">
+                <ControlPanel
+                  inputs={inputs}
+                  onChange={
+                    onInputChange
+                  }
+                  onSimulate={
+                    handleSimulate
+                  }
+                  onReset={
+                    handleReset
+                  }
+                />
+              </div>
+
+              <div className="mission-overlay mission-overlay--right">
+                <SatelliteTelemetry
+                  inputs={inputs}
+                  simulationActive={
+                    simulationActive
+                  }
+                  receivedPower={
+                    simulation
+                      .analyticalPower
+                  }
+                  attenuationPercent={
+                    simulation
+                      .attenuationPercent
+                  }
+                  derivative={
+                    simulation
+                      .derivative
+                  }
+                  relativeErrorPercent={
+                    simulation
+                      .relativeErrorPercent
+                  }
+                />
+              </div>
+
+              <div className="mission-bottom-dock">
+                <section className="dock-object">
+                  <div className="dock-object__top">
+                    <div>
+                      <span className="panel__eyebrow">
+                        ORBITAL OBJECT
+                      </span>
+
+                      <strong>
+                        ISS
+                      </strong>
+                    </div>
+
+                    <Satellite
+                      size={25}
+                      strokeWidth={1.2}
+                    />
+                  </div>
+
+                  <div
+                    className="dock-object__visual"
+                    style={{
+                      position:
+                        'relative',
+
+                      overflow:
+                        'hidden',
+                    }}
+                  >
+                    <img
+                      src={
+                        ISS_IMAGE_PATH
+                      }
+                      alt="International Space Station"
+                      style={{
+                        position:
+                          'absolute',
+
+                        inset:
+                          0,
+
+                        width:
+                          '100%',
+
+                        height:
+                          '100%',
+
+                        objectFit:
+                          'cover',
+
+                        objectPosition:
+                          'center',
+
+                        opacity:
+                          0.78,
+                      }}
+                    />
+
+                    <div
+                      aria-hidden="true"
+                      style={{
+                        position:
+                          'absolute',
+
+                        inset:
+                          0,
+
+                        background:
+                          'linear-gradient(180deg, rgba(5, 18, 23, 0.08) 0%, rgba(5, 18, 23, 0.18) 42%, rgba(5, 18, 23, 0.72) 100%)',
+
+                        pointerEvents:
+                          'none',
+                      }}
+                    />
+
+                    <div
+                      style={{
+                        position:
+                          'absolute',
+
+                        left:
+                          '12px',
+
+                        bottom:
+                          '10px',
+
+                        zIndex:
+                          2,
+
+                        display:
+                          'flex',
+
+                        alignItems:
+                          'center',
+
+                        gap:
+                          '6px',
+
+                        color:
+                          '#dbe9eb',
+
+                        fontSize:
+                          '6px',
+
+                        letterSpacing:
+                          '0.14em',
+
+                        textTransform:
+                          'uppercase',
+                      }}
+                    >
+                      <span
+                        className="status-dot status-dot--cyan"
+                      />
+
+                      NASA ISS
+                    </div>
+                  </div>
+
+                  <div className="dock-object__stats">
+                    <div>
+                      <span>
+                        ORBIT
+                      </span>
+
+                      <strong>
+                        ~420 km
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>
+                        SIGNAL
+                      </span>
+
+                      <strong
+                        className={`dock-signal dock-signal--${signalLabel.toLowerCase()}`}
+                      >
+                        {signalLabel}
+                      </strong>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="metrics-section dock-metrics">
+                  <div className="section-heading">
+                    <div>
+                      <span className="panel__eyebrow">
+                        SIMULATION
+                      </span>
+
+                      <h2>
+                        EDO Results
+                      </h2>
+                    </div>
+
+                    <span className="section-heading__status">
+                      {simulationActive
+                        ? 'LIVE'
+                        : 'PREVIEW'}
+                    </span>
+                  </div>
+
+                  <div className="metrics-grid">
+                    <MetricCard
+                      label="POWER"
+                      value={
+                        simulation
+                          .analyticalPower
+                          .toFixed(
+                            3,
+                          )
+                      }
+                      unit="W"
+                      description="Received P(r)"
+                      icon={
+                        <Radio
+                          size={
+                            15
+                          }
+                        />
+                      }
+                    />
+
+                    <MetricCard
+                      label="LOSS"
+                      value={
+                        simulation
+                          .attenuationPercent
+                          .toFixed(
+                            1,
+                          )
+                      }
+                      unit="%"
+                      description="Attenuation"
+                      icon={
+                        <TrendingDown
+                          size={
+                            15
+                          }
+                        />
+                      }
+                      accent="amber"
+                    />
+
+                    <MetricCard
+                      label="dP/dr"
+                      value={
+                        simulation
+                          .derivative
+                          .toExponential(
+                            2,
+                          )
+                      }
+                      description="Signal variation"
+                      icon={
+                        <Activity
+                          size={
+                            15
+                          }
+                        />
+                      }
+                      accent="blue"
+                    />
+
+                    <MetricCard
+                      label="RK4 ERROR"
+                      value={
+                        simulation
+                          .relativeErrorPercent
+                          .toExponential(
+                            1,
+                          )
+                      }
+                      unit="%"
+                      description="Numerical error"
+                      icon={
+                        <Sigma
+                          size={
+                            15
+                          }
+                        />
+                      }
+                    />
+                  </div>
+                </section>
+
+                <AnalysisPreview
+                  analyticalPoints={
+                    simulation
+                      .analyticalPoints
+                  }
+                  numericalPoints={
+                    simulation
+                      .numericalPoints
+                  }
+                  initialPower={
+                    inputs.initialPower
+                  }
+                  theme={
+                    theme
+                  }
+                />
+              </div>
+            </main>
+          )}
+      </section>
+    </div>
+  );
+}
+
+export default Dashboard;
+
+============================================================
+ARQUIVO: C:\projetos\satellite-signal-edo-simulator\src\components\simulation\ControlPanel.tsx
+============================================================
+
+import {
+  Play,
+  RotateCcw,
+  SlidersHorizontal,
+} from 'lucide-react';
+
+import type {
+  SimulationField,
+  SimulationInputs,
+} from '../../types/simulation';
+
+interface ControlPanelProps {
+  inputs: SimulationInputs;
+
+  onChange: (
+    field: SimulationField,
+    value: number,
+  ) => void;
+
+  onSimulate: () => void;
+  onReset: () => void;
+}
+
+interface NumberFieldProps {
+  label: string;
+  symbol: string;
+  unit?: string;
+  value: number;
+  step?: number;
+  min?: number;
+
+  onChange: (
+    value: number,
+  ) => void;
+}
+
+function NumberField({
+  label,
+  symbol,
+  unit,
+  value,
+  step = 1,
+  min = 0,
+  onChange,
+}: NumberFieldProps) {
+  return (
+    <label className="control-field">
+      <div className="control-field__header">
+        <span>
+          {label}
+        </span>
+
+        <span className="control-field__symbol">
+          {symbol}
+        </span>
+      </div>
+
+      <div className="control-field__input-wrapper">
+        <input
+          className="control-field__input"
+          type="number"
+          min={min}
+          step={step}
+          value={value}
+          onChange={(
+            event,
+          ) =>
+            onChange(
+              Number(
+                event.target.value,
+              ),
+            )
+          }
+        />
+
+        {unit && (
+          <span className="control-field__unit">
+            {unit}
+          </span>
+        )}
+      </div>
+    </label>
+  );
+}
+
+function ControlPanel({
+  inputs,
+  onChange,
+  onSimulate,
+  onReset,
+}: ControlPanelProps) {
+  return (
+    <aside className="panel control-panel">
+      <div className="panel__heading">
+        <div>
+          <span className="panel__eyebrow">
+            SIMULATION
+          </span>
+
+          <h2>
+            Model Parameters
+          </h2>
+        </div>
+
+        <SlidersHorizontal
+          size={17}
+          strokeWidth={1.5}
+        />
+      </div>
+
+      <div className="control-panel__fields">
+        <NumberField
+          label="Power"
+          symbol="Pâ‚€"
+          unit="W"
+          value={
+            inputs.initialPower
+          }
+          min={0.1}
+          step={1}
+          onChange={(
+            value,
+          ) =>
+            onChange(
+              'initialPower',
+              value,
+            )
+          }
+        />
+
+        <NumberField
+          label="Reference"
+          symbol="râ‚€"
+          unit="km"
+          value={
+            inputs.referenceDistance
+          }
+          min={1}
+          step={10}
+          onChange={(
+            value,
+          ) =>
+            onChange(
+              'referenceDistance',
+              value,
+            )
+          }
+        />
+
+        <NumberField
+          label="Distance"
+          symbol="r"
+          unit="km"
+          value={
+            inputs.finalDistance
+          }
+          min={1}
+          step={100}
+          onChange={(
+            value,
+          ) =>
+            onChange(
+              'finalDistance',
+              value,
+            )
+          }
+        />
+
+        <NumberField
+          label="Coefficient"
+          symbol="k"
+          value={
+            inputs.attenuationCoefficient
+          }
+          min={0.1}
+          step={0.1}
+          onChange={(
+            value,
+          ) =>
+            onChange(
+              'attenuationCoefficient',
+              value,
+            )
+          }
+        />
+
+        <NumberField
+          label="RK4 step"
+          symbol="Î”r"
+          unit="km"
+          value={
+            inputs.numericalStep
+          }
+          min={1}
+          step={1}
+          onChange={(
+            value,
+          ) =>
+            onChange(
+              'numericalStep',
+              value,
+            )
+          }
+        />
+      </div>
+
+      <div className="control-panel__actions">
+        <button
+          className="button button--primary"
+          type="button"
+          onClick={onSimulate}
+        >
+          <Play
+            size={14}
+            fill="currentColor"
+          />
+
+          Simulate
+        </button>
+
+        <button
+          className="button button--ghost"
+          type="button"
+          onClick={onReset}
+          title="Reset parameters"
+        >
+          <RotateCcw
+            size={15}
+          />
+        </button>
+      </div>
+
+      <div className="control-panel__footer">
+        <span className="status-dot status-dot--cyan" />
+
+        dP/dr = âˆ’kP/r
+      </div>
+    </aside>
+  );
+}
+
+export default ControlPanel;
+
+============================================================
+ARQUIVO: C:\projetos\satellite-signal-edo-simulator\src\components\simulation\SatelliteTelemetry.tsx
+============================================================
+
+import {
+  Activity,
+  Gauge,
+  Navigation2,
+  Radio,
+  Satellite,
+} from 'lucide-react';
+
+import type {
+  SimulationInputs,
+} from '../../types/simulation';
+
+interface SatelliteTelemetryProps {
+  inputs: SimulationInputs;
+
+  simulationActive: boolean;
+
+  receivedPower: number;
+  attenuationPercent: number;
+  derivative: number;
+  relativeErrorPercent: number;
+}
+
+function SatelliteTelemetry({
+  inputs,
+  simulationActive,
+  receivedPower,
+  attenuationPercent,
+  derivative,
+  relativeErrorPercent,
+}: SatelliteTelemetryProps) {
+  const ratio =
+    inputs.initialPower > 0
+      ? receivedPower /
+        inputs.initialPower
+      : 0;
+
+  const normalizedStrength =
+    Math.max(
+      0,
+      Math.min(
+        1,
+        ratio,
+      ),
+    );
+
+  const quality =
+    normalizedStrength >= 0.5
+      ? 'STRONG'
+      : normalizedStrength >= 0.2
+        ? 'MODERATE'
+        : normalizedStrength >= 0.05
+          ? 'WEAK'
+          : 'CRITICAL';
+
+  const qualityClass =
+    quality.toLowerCase();
+
+  return (
+    <aside className="panel telemetry-panel">
+      <div className="panel__heading">
+        <div>
+          <span className="panel__eyebrow">
+            ORBITAL OBJECT
+          </span>
+
+          <h2>
+            ISS Status
+          </h2>
+        </div>
+
+        <Satellite
+          size={18}
+          strokeWidth={1.4}
+        />
+      </div>
+
+      <div className="satellite-identity">
+        <div className="satellite-identity__icon">
+          <Satellite
+            size={31}
+            strokeWidth={1.15}
+          />
+        </div>
+
+        <div>
+          <span className="satellite-identity__code">
+            ISS Â· NASA
+          </span>
+
+          <strong>
+            International Space Station
+          </strong>
+        </div>
+      </div>
+
+      <div className="telemetry-status">
+        <span
+          className={
+            simulationActive
+              ? 'status-dot status-dot--cyan'
+              : 'status-dot'
+          }
+        />
+
+        {simulationActive
+          ? 'LINK ACTIVE'
+          : 'STANDBY'}
+      </div>
+
+      <div className="signal-quality">
+        <div className="signal-quality__header">
+          <span>
+            SIGNAL
+          </span>
+
+          <strong
+            className={`signal-quality__value signal-quality__value--${qualityClass}`}
+          >
+            {quality}
+          </strong>
+        </div>
+
+        <div className="signal-quality__track">
+          <div
+            className={`signal-quality__fill signal-quality__fill--${qualityClass}`}
+            style={{
+              width:
+                `${normalizedStrength * 100}%`,
+            }}
+          />
+        </div>
+
+        <div className="signal-quality__scale">
+          <span>
+            0%
+          </span>
+
+          <span>
+            {(
+              normalizedStrength *
+              100
+            ).toFixed(1)}
+            %
+          </span>
+        </div>
+      </div>
+
+      <div className="telemetry-list">
+        <div className="telemetry-row">
+          <div className="telemetry-row__icon">
+            <Navigation2
+              size={15}
+            />
+          </div>
+
+          <div>
+            <span>
+              Model distance
+            </span>
+
+            <strong>
+              {inputs.finalDistance.toLocaleString()}
+              {' '}
+              km
+            </strong>
+          </div>
+        </div>
+
+        <div className="telemetry-row">
+          <div className="telemetry-row__icon">
+            <Radio
+              size={15}
+            />
+          </div>
+
+          <div>
+            <span>
+              Received power
+            </span>
+
+            <strong>
+              {receivedPower.toFixed(
+                4,
+              )}
+              {' '}
+              W
+            </strong>
+          </div>
+        </div>
+
+        <div className="telemetry-row">
+          <div className="telemetry-row__icon">
+            <Gauge
+              size={15}
+            />
+          </div>
+
+          <div>
+            <span>
+              Attenuation
+            </span>
+
+            <strong>
+              {attenuationPercent.toFixed(
+                2,
+              )}
+              %
+            </strong>
+          </div>
+        </div>
+
+        <div className="telemetry-row">
+          <div className="telemetry-row__icon">
+            <Activity
+              size={15}
+            />
+          </div>
+
+          <div>
+            <span>
+              RK4 error
+            </span>
+
+            <strong>
+              {relativeErrorPercent.toExponential(
+                2,
+              )}
+              %
+            </strong>
+          </div>
+        </div>
+      </div>
+
+      <div className="telemetry-panel__footer">
+        <span>
+          DERIVATIVE
+        </span>
+
+        <strong>
+          {derivative.toExponential(
+            3,
+          )}
+          {' '}
+          W/km
+        </strong>
+      </div>
+    </aside>
+  );
+}
+
+export default SatelliteTelemetry;
+
+============================================================
+ARQUIVO: C:\projetos\satellite-signal-edo-simulator\src\components\simulation\MetricCard.tsx
+============================================================
+
+import type { ReactNode } from 'react';
+
+interface MetricCardProps {
+  label: string;
+  value: string;
+  unit?: string;
+  description: string;
+  icon: ReactNode;
+  accent?: 'cyan' | 'blue' | 'amber';
+}
+
+function MetricCard({
+  label,
+  value,
+  unit,
+  description,
+  icon,
+  accent = 'cyan',
+}: MetricCardProps) {
+  return (
+    <article
+      className={`metric-card metric-card--${accent}`}
+    >
+      <div className="metric-card__top">
+        <span>{label}</span>
+
+        <div className="metric-card__icon">
+          {icon}
+        </div>
+      </div>
+
+      <div className="metric-card__value">
+        {value}
+
+        {unit && (
+          <span>{unit}</span>
+        )}
+      </div>
+
+      <div className="metric-card__description">
+        {description}
+      </div>
+    </article>
+  );
+}
+
+export default MetricCard;
+
+============================================================
+ARQUIVO: C:\projetos\satellite-signal-edo-simulator\src\components\charts\AnalysisPreview.tsx
+============================================================
+
+import Plot from 'react-plotly.js';
+
+import {
+  Box,
+  MousePointer2,
+} from 'lucide-react';
+
+import type {
+  SimulationPoint,
+} from '../../types/simulation';
+
+type ThemeMode =
+  | 'dark'
+  | 'light';
+
+interface AnalysisPreviewProps {
+  analyticalPoints:
+    SimulationPoint[];
+
+  numericalPoints:
+    SimulationPoint[];
+
+  initialPower:
+    number;
+
+  theme:
+    ThemeMode;
+}
+
+function buildHoverText(
+  points:
+    SimulationPoint[],
+
+  initialPower:
+    number,
+
+  method:
+    string,
+): string[] {
+  return points.map(
+    (point) => {
+      const attenuation =
+        initialPower > 0
+          ? (
+              1 -
+              point.power /
+                initialPower
+            ) *
+            100
+          : 0;
+
+      return [
+        `<b>${method}</b>`,
+        `<b>Distance:</b> ${point.distance.toFixed(2)} km`,
+        `<b>Power:</b> ${point.power.toFixed(6)} W`,
+        `<b>dP/dr:</b> ${point.derivative.toExponential(5)} W/km`,
+        `<b>Attenuation:</b> ${attenuation.toFixed(3)} %`,
+      ].join(
+        '<br>',
+      );
+    },
+  );
+}
+
+function AnalysisPreview({
+  analyticalPoints,
+  numericalPoints,
+  initialPower,
+  theme,
+}: AnalysisPreviewProps) {
+  const isLight =
+    theme === 'light';
+
+  const textColor =
+    isLight
+      ? '#4B626C'
+      : '#81969E';
+
+  const gridColor =
+    isLight
+      ? '#D9E2E5'
+      : '#1A323A';
+
+  const zeroColor =
+    isLight
+      ? '#BACBD0'
+      : '#29434B';
+
+  const sceneColor =
+    isLight
+      ? '#F7FAFB'
+      : '#08171C';
+
+  const hoverBackground =
+    isLight
+      ? '#FFFFFF'
+      : '#071419';
+
+  const hoverTextColor =
+    isLight
+      ? '#18313B'
+      : '#E5F1F3';
+
+  const analyticalHover =
+    buildHoverText(
+      analyticalPoints,
+      initialPower,
+      'Analytical solution',
+    );
+
+  const numericalHover =
+    buildHoverText(
+      numericalPoints,
+      initialPower,
+      'RK4 numerical solution',
+    );
+
+  return (
+    <section className="analysis-panel">
+      <div className="analysis-panel__header">
+        <div>
+          <span className="panel__eyebrow">
+            EDO ANALYSIS
+          </span>
+
+          <h2>
+            3D Phase Space
+          </h2>
+        </div>
+
+        <div className="analysis-panel__mode">
+          <Box size={14} />
+
+          X Â· Y Â· Z
+        </div>
+      </div>
+
+      <div className="analysis-plot-wrapper">
+        <Plot
+          data={[
+            {
+              type:
+                'scatter3d',
+
+              mode:
+                'lines',
+
+              name:
+                'Analytical',
+
+              x:
+                analyticalPoints.map(
+                  (
+                    point,
+                  ) =>
+                    point.distance,
+                ),
+
+              y:
+                analyticalPoints.map(
+                  (
+                    point,
+                  ) =>
+                    point.power,
+                ),
+
+              z:
+                analyticalPoints.map(
+                  (
+                    point,
+                  ) =>
+                    point.derivative,
+                ),
+
+              text:
+                analyticalHover,
+
+              hoverinfo:
+                'text',
+
+              line: {
+                color:
+                  '#48DCE0',
+
+                width:
+                  6,
+              },
+            },
+
+            {
+              type:
+                'scatter3d',
+
+              mode:
+                'lines+markers',
+
+              name:
+                'RK4',
+
+              x:
+                numericalPoints.map(
+                  (
+                    point,
+                  ) =>
+                    point.distance,
+                ),
+
+              y:
+                numericalPoints.map(
+                  (
+                    point,
+                  ) =>
+                    point.power,
+                ),
+
+              z:
+                numericalPoints.map(
+                  (
+                    point,
+                  ) =>
+                    point.derivative,
+                ),
+
+              text:
+                numericalHover,
+
+              hoverinfo:
+                'text',
+
+              line: {
+                color:
+                  '#4F83D7',
+
+                width:
+                  4,
+              },
+
+              marker: {
+                color:
+                  '#6E9BE5',
+
+                size:
+                  2.5,
+
+                opacity:
+                  0.75,
+              },
+            },
+          ]}
+          layout={{
+            autosize:
+              true,
+
+            paper_bgcolor:
+              'rgba(0,0,0,0)',
+
+            plot_bgcolor:
+              'rgba(0,0,0,0)',
+
+            margin: {
+              l: 0,
+              r: 0,
+              t: 0,
+              b: 0,
+            },
+
+            showlegend:
+              false,
+
+            hoverlabel: {
+              bgcolor:
+                hoverBackground,
+
+              bordercolor:
+                gridColor,
+
+              font: {
+                color:
+                  hoverTextColor,
+
+                size:
+                  11,
+              },
+            },
+
+            scene: {
+              bgcolor:
+                sceneColor,
+
+              camera: {
+                eye: {
+                  x: 1.55,
+                  y: 1.40,
+                  z: 0.82,
+                },
+              },
+
+              xaxis: {
+                title: {
+                  text:
+                    'Distance r',
+
+                  font: {
+                    color:
+                      textColor,
+
+                    size:
+                      9,
+                  },
+                },
+
+                tickfont: {
+                  color:
+                    textColor,
+
+                  size:
+                    8,
+                },
+
+                color:
+                  textColor,
+
+                gridcolor:
+                  gridColor,
+
+                zerolinecolor:
+                  zeroColor,
+
+                backgroundcolor:
+                  sceneColor,
+
+                showbackground:
+                  true,
+              },
+
+              yaxis: {
+                title: {
+                  text:
+                    'Power P(r)',
+
+                  font: {
+                    color:
+                      textColor,
+
+                    size:
+                      9,
+                  },
+                },
+
+                tickfont: {
+                  color:
+                    textColor,
+
+                  size:
+                    8,
+                },
+
+                color:
+                  textColor,
+
+                gridcolor:
+                  gridColor,
+
+                zerolinecolor:
+                  zeroColor,
+
+                backgroundcolor:
+                  sceneColor,
+
+                showbackground:
+                  true,
+              },
+
+              zaxis: {
+                title: {
+                  text:
+                    'dP/dr',
+
+                  font: {
+                    color:
+                      textColor,
+
+                    size:
+                      9,
+                  },
+                },
+
+                tickfont: {
+                  color:
+                    textColor,
+
+                  size:
+                    8,
+                },
+
+                color:
+                  textColor,
+
+                gridcolor:
+                  gridColor,
+
+                zerolinecolor:
+                  zeroColor,
+
+                backgroundcolor:
+                  sceneColor,
+
+                showbackground:
+                  true,
+              },
+            },
+          }}
+          config={{
+            responsive:
+              true,
+
+            displaylogo:
+              false,
+
+            scrollZoom:
+              true,
+
+            modeBarButtonsToRemove: [
+              'toImage',
+            ],
+          }}
+          useResizeHandler
+          className="analysis-plot"
+        />
+
+        <div className="analysis-interaction">
+          <MousePointer2
+            size={12}
+          />
+
+          ROTATE Â· ZOOM
+        </div>
+      </div>
+
+      <div className="analysis-panel__legend">
+        <div>
+          <span className="analysis-legend analysis-legend--analytical" />
+
+          Analytical
+        </div>
+
+        <div>
+          <span className="analysis-legend analysis-legend--rk4" />
+
+          RK4
+        </div>
+
+        <div>
+          X Â· Distance
+        </div>
+
+        <div>
+          Y Â· Power
+        </div>
+
+        <div>
+          Z Â· Derivative
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default AnalysisPreview;
+
+============================================================
+ARQUIVO: C:\projetos\satellite-signal-edo-simulator\src\components\globe\GlobeScene.tsx
+============================================================
+
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+
+import Globe, {
+  type GlobeMethods,
+} from 'react-globe.gl';
+
+import * as THREE from 'three';
+
+import {
+  GLTFLoader,
+} from 'three/examples/jsm/loaders/GLTFLoader.js';
+
+import {
+  RadioTower,
+  Satellite,
+} from 'lucide-react';
+
+import type {
+  SimulationInputs,
+} from '../../types/simulation';
+
+interface GlobeSceneProps {
+  inputs: SimulationInputs;
+  simulationActive: boolean;
+  signalStrength: number;
+}
+
+interface GroundPoint {
+  lat: number;
+  lng: number;
+  altitude: number;
+  radius: number;
+  color: string;
+  label: string;
+}
+
+interface SignalArc {
+  startLat: number;
+  startLng: number;
+  startAltitude: number;
+
+  endLat: number;
+  endLng: number;
+  endAltitude: number;
+
+  maxAltitude: number;
+
+  color: string[];
+  stroke: number;
+
+  dashLength: number;
+  dashGap: number;
+  dashAnimateTime: number;
+}
+
+interface OrbitPoint {
+  lat: number;
+  lng: number;
+  altitude: number;
+}
+
+interface OrbitPath {
+  points: OrbitPoint[];
+  color: string;
+  stroke: number;
+
+  dashLength: number;
+  dashGap: number;
+  dashAnimateTime: number;
+
+  label: string;
+}
+
+interface IssPosition {
+  lat: number;
+  lng: number;
+}
+
+interface IssObjectData {
+  lat: number;
+  lng: number;
+  altitude: number;
+
+  label: string;
+
+  rotation: {
+    x?: number;
+    y?: number;
+    z?: number;
+  };
+
+  modelState: string;
+}
+
+type ModelStatus =
+  | 'loading'
+  | 'ready'
+  | 'error';
+
+const EARTH_RADIUS_KM =
+  6371;
+
+const ISS_ALTITUDE_KM =
+  420;
+
+const ISS_ALTITUDE =
+  ISS_ALTITUDE_KM /
+  EARTH_RADIUS_KM;
+
+const ISS_ORBIT_INCLINATION =
+  51.6;
+
+const ISS_MODEL_PATH =
+  `${import.meta.env.BASE_URL}models/iss-b.glb`;
+
+const INITIAL_ISS_POSITION:
+  IssPosition = {
+    lat: 0,
+    lng: -42,
+  };
+
+const STATION_POSITION = {
+  lat: -2.53,
+  lng: -44.30,
+};
+
+function wrapLongitude(
+  longitude: number,
+): number {
+  return (
+    ((longitude + 180) %
+      360 +
+      360) %
+      360 -
+    180
+  );
+}
+
+function createFallbackIss():
+  THREE.Object3D {
+  const station =
+    new THREE.Group();
+
+  const moduleMaterial =
+    new THREE.MeshStandardMaterial({
+      color: 0xc5d0d4,
+      metalness: 0.65,
+      roughness: 0.36,
+    });
+
+  const darkMaterial =
+    new THREE.MeshStandardMaterial({
+      color: 0x17252b,
+      metalness: 0.35,
+      roughness: 0.48,
+    });
+
+  const panelMaterial =
+    new THREE.MeshStandardMaterial({
+      color: 0x17406b,
+      metalness: 0.18,
+      roughness: 0.56,
+    });
+
+  const truss =
+    new THREE.Mesh(
+      new THREE.BoxGeometry(
+        17,
+        0.65,
+        0.65,
+      ),
+      darkMaterial,
+    );
+
+  station.add(
+    truss,
+  );
+
+  for (
+    let index = -2;
+    index <= 2;
+    index += 1
+  ) {
+    const module =
+      new THREE.Mesh(
+        new THREE.CylinderGeometry(
+          1.25,
+          1.25,
+          3,
+          18,
+        ),
+        moduleMaterial,
+      );
+
+    module.rotation.z =
+      Math.PI / 2;
+
+    module.position.x =
+      index * 2.2;
+
+    module.position.z =
+      index % 2 === 0
+        ? 0
+        : 0.65;
+
+    station.add(
+      module,
+    );
+  }
+
+  const panelGeometry =
+    new THREE.BoxGeometry(
+      5.8,
+      0.14,
+      2,
+    );
+
+  [
+    -10,
+    -6.5,
+    6.5,
+    10,
+  ].forEach(
+    (xPosition) => {
+      const frontPanel =
+        new THREE.Mesh(
+          panelGeometry,
+          panelMaterial,
+        );
+
+      frontPanel.position.set(
+        xPosition,
+        0,
+        2.5,
+      );
+
+      station.add(
+        frontPanel,
+      );
+
+      const rearPanel =
+        frontPanel.clone();
+
+      rearPanel.position.z =
+        -2.5;
+
+      station.add(
+        rearPanel,
+      );
+    },
+  );
+
+  const mast =
+    new THREE.Mesh(
+      new THREE.BoxGeometry(
+        0.45,
+        4.2,
+        0.45,
+      ),
+      darkMaterial,
+    );
+
+  mast.position.y =
+    2.2;
+
+  station.add(
+    mast,
+  );
+
+  station.rotation.y =
+    Math.PI / 2;
+
+  return station;
+}
+
+function prepareIssModel(
+  source: THREE.Object3D,
+): THREE.Object3D {
+  const model =
+    source.clone(
+      true,
+    );
+
+  model.traverse(
+    (child) => {
+      if (
+        !(
+          child instanceof
+          THREE.Mesh
+        )
+      ) {
+        return;
+      }
+
+      child.castShadow =
+        false;
+
+      child.receiveShadow =
+        false;
+
+      if (
+        Array.isArray(
+          child.material,
+        )
+      ) {
+        child.material =
+          child.material.map(
+            (material) =>
+              material.clone(),
+          );
+      }
+      else {
+        child.material =
+          child.material.clone();
+      }
+    },
+  );
+
+  const box =
+    new THREE.Box3()
+      .setFromObject(
+        model,
+      );
+
+  const size =
+    box.getSize(
+      new THREE.Vector3(),
+    );
+
+  const largestDimension =
+    Math.max(
+      size.x,
+      size.y,
+      size.z,
+    );
+
+  if (
+    Number.isFinite(
+      largestDimension,
+    ) &&
+    largestDimension > 0
+  ) {
+    const desiredSize =
+      18;
+
+    const scale =
+      desiredSize /
+      largestDimension;
+
+    model.scale.setScalar(
+      scale,
+    );
+  }
+
+  const scaledBox =
+    new THREE.Box3()
+      .setFromObject(
+        model,
+      );
+
+  const center =
+    scaledBox.getCenter(
+      new THREE.Vector3(),
+    );
+
+  model.position.sub(
+    center,
+  );
+
+  const container =
+    new THREE.Group();
+
+  container.add(
+    model,
+  );
+
+  model.rotation.x =
+    Math.PI / 2;
+
+  model.rotation.z =
+    Math.PI / 2;
+
+  return container;
+}
+
+function GlobeScene({
+  inputs,
+  simulationActive,
+  signalStrength,
+}: GlobeSceneProps) {
+  const containerRef =
+    useRef<
+      HTMLDivElement | null
+    >(null);
+
+  const globeRef =
+    useRef<
+      GlobeMethods | undefined
+    >(undefined);
+
+  const [
+    dimensions,
+    setDimensions,
+  ] = useState({
+    width: 900,
+    height: 760,
+  });
+
+  const [
+    modelStatus,
+    setModelStatus,
+  ] =
+    useState<ModelStatus>(
+      'loading',
+    );
+
+  const [
+    issModel,
+    setIssModel,
+  ] =
+    useState<
+      THREE.Object3D | null
+    >(null);
+
+  const [
+    issPosition,
+    setIssPosition,
+  ] =
+    useState<IssPosition>(
+      INITIAL_ISS_POSITION,
+    );
+
+  const strength =
+    useMemo(
+      () =>
+        Math.max(
+          0,
+          Math.min(
+            1,
+            signalStrength,
+          ),
+        ),
+      [signalStrength],
+    );
+
+  const fallbackIss =
+    useMemo(
+      () =>
+        createFallbackIss(),
+      [],
+    );
+
+  useEffect(() => {
+    let cancelled =
+      false;
+
+    const loader =
+      new GLTFLoader();
+
+    setModelStatus(
+      'loading',
+    );
+
+    loader.load(
+      ISS_MODEL_PATH,
+
+      (gltf) => {
+        if (cancelled) {
+          return;
+        }
+
+        setIssModel(
+          prepareIssModel(
+            gltf.scene,
+          ),
+        );
+
+        setModelStatus(
+          'ready',
+        );
+      },
+
+      undefined,
+
+      (error) => {
+        if (cancelled) {
+          return;
+        }
+
+        console.error(
+          'Failed to load ISS model:',
+          error,
+        );
+
+        setIssModel(
+          null,
+        );
+
+        setModelStatus(
+          'error',
+        );
+      },
+    );
+
+    return () => {
+      cancelled =
+        true;
+    };
+  }, []);
+
+  const issPrototype =
+    useMemo(
+      () =>
+        issModel ??
+        fallbackIss,
+      [
+        issModel,
+        fallbackIss,
+      ],
+    );
+
+  const createIssObject =
+    useCallback(
+      () =>
+        issPrototype.clone(
+          true,
+        ),
+      [issPrototype],
+    );
+
+  useEffect(() => {
+    if (
+      !simulationActive
+    ) {
+      setIssPosition(
+        INITIAL_ISS_POSITION,
+      );
+
+      return;
+    }
+
+    const startTime =
+      performance.now();
+
+    const updatePosition =
+      () => {
+        const elapsedSeconds =
+          (
+            performance.now() -
+            startTime
+          ) / 1000;
+
+        const orbitalAngle =
+          (
+            elapsedSeconds *
+            3
+          ) %
+          360;
+
+        const radians =
+          THREE.MathUtils
+            .degToRad(
+              orbitalAngle,
+            );
+
+        const latitude =
+          ISS_ORBIT_INCLINATION *
+          Math.sin(
+            radians,
+          );
+
+        const longitude =
+          wrapLongitude(
+            -42 +
+            orbitalAngle,
+          );
+
+        setIssPosition({
+          lat: latitude,
+          lng: longitude,
+        });
+      };
+
+    updatePosition();
+
+    const interval =
+      window.setInterval(
+        updatePosition,
+        80,
+      );
+
+    return () => {
+      window.clearInterval(
+        interval,
+      );
+    };
+  }, [
+    simulationActive,
+  ]);
+
+  const stationPoints =
+    useMemo<
+      GroundPoint[]
+    >(
+      () => [
+        {
+          lat:
+            STATION_POSITION.lat,
+
+          lng:
+            STATION_POSITION.lng,
+
+          altitude:
+            0.012,
+
+          radius:
+            0.32,
+
+          color:
+            '#F0C56E',
+
+          label:
+            'Ground Station Â· SÃ£o LuÃ­s',
+        },
+      ],
+      [],
+    );
+
+  const issObjects =
+    useMemo<
+      IssObjectData[]
+    >(
+      () => [
+        {
+          lat:
+            issPosition.lat,
+
+          lng:
+            issPosition.lng,
+
+          altitude:
+            ISS_ALTITUDE,
+
+          label:
+            'International Space Station',
+
+          rotation: {
+            x: 0,
+            y: 0,
+            z: 90,
+          },
+
+          modelState:
+            modelStatus,
+        },
+      ],
+      [
+        issPosition,
+        modelStatus,
+      ],
+    );
+
+  const orbitPaths =
+    useMemo<
+      OrbitPath[]
+    >(() => {
+      const points:
+        OrbitPoint[] = [];
+
+      for (
+        let index = 0;
+        index <= 360;
+        index += 1
+      ) {
+        const radians =
+          THREE.MathUtils
+            .degToRad(
+              index,
+            );
+
+        points.push({
+          lat:
+            ISS_ORBIT_INCLINATION *
+            Math.sin(
+              radians,
+            ),
+
+          lng:
+            wrapLongitude(
+              -180 +
+              index,
+            ),
+
+          altitude:
+            ISS_ALTITUDE,
+        });
+      }
+
+      return [
+        {
+          points,
+
+          color:
+            simulationActive
+              ? '#568994'
+              : '#30474E',
+
+          stroke:
+            0.12,
+
+          dashLength:
+            0.07,
+
+          dashGap:
+            0.022,
+
+          dashAnimateTime:
+            simulationActive
+              ? 9500
+              : 0,
+
+          label:
+            'Illustrative ISS orbit',
+        },
+      ];
+    }, [
+      simulationActive,
+    ]);
+
+  const signalColors =
+    useMemo(
+      () => {
+        if (
+          strength >=
+          0.5
+        ) {
+          return [
+            '#74F2EE',
+            '#53B7EF',
+          ];
+        }
+
+        if (
+          strength >=
+          0.2
+        ) {
+          return [
+            '#E8CA65',
+            '#6CBFC9',
+          ];
+        }
+
+        if (
+          strength >=
+          0.05
+        ) {
+          return [
+            '#E99C54',
+            '#D46C54',
+          ];
+        }
+
+        return [
+          '#EA6767',
+          '#A9484D',
+        ];
+      },
+      [strength],
+    );
+
+  const signalArcs =
+    useMemo<
+      SignalArc[]
+    >(
+      () => [
+        {
+          startLat:
+            issPosition.lat,
+
+          startLng:
+            issPosition.lng,
+
+          startAltitude:
+            ISS_ALTITUDE,
+
+          endLat:
+            STATION_POSITION.lat,
+
+          endLng:
+            STATION_POSITION.lng,
+
+          endAltitude:
+            0.012,
+
+          maxAltitude:
+            ISS_ALTITUDE +
+            0.035,
+
+          color:
+            simulationActive
+              ? signalColors
+              : [
+                  '#374B51',
+                  '#273A40',
+                ],
+
+          stroke:
+            simulationActive
+              ? 0.20 +
+                strength *
+                  0.9
+              : 0.18,
+
+          dashLength:
+            0.22,
+
+          dashGap:
+            0.055,
+
+          dashAnimateTime:
+            simulationActive
+              ? Math.round(
+                  2200 -
+                  strength *
+                    1100,
+                )
+              : 0,
+        },
+      ],
+      [
+        issPosition,
+        simulationActive,
+        strength,
+        signalColors,
+      ],
+    );
+
+  useEffect(() => {
+    if (
+      !containerRef.current
+    ) {
+      return;
+    }
+
+    const updateDimensions =
+      () => {
+        if (
+          !containerRef.current
+        ) {
+          return;
+        }
+
+        setDimensions({
+          width:
+            containerRef
+              .current
+              .clientWidth,
+
+          height:
+            containerRef
+              .current
+              .clientHeight,
+        });
+      };
+
+    updateDimensions();
+
+    const observer =
+      new ResizeObserver(
+        updateDimensions,
+      );
+
+    observer.observe(
+      containerRef.current,
+    );
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    const controls =
+      globeRef.current
+        ?.controls();
+
+    if (!controls) {
+      return;
+    }
+
+    controls.autoRotate =
+      !simulationActive;
+
+    controls.autoRotateSpeed =
+      0.16;
+
+    controls.enableDamping =
+      true;
+
+    controls.dampingFactor =
+      0.055;
+
+    controls.minDistance =
+      165;
+
+    controls.maxDistance =
+      470;
+
+    globeRef.current
+      ?.pointOfView(
+        {
+          lat: 8,
+          lng: -40,
+          altitude: 1.78,
+        },
+        900,
+      );
+  }, [
+    simulationActive,
+  ]);
+
+  const modelLabel =
+    modelStatus ===
+    'ready'
+      ? 'NASA ISS 3D'
+      : modelStatus ===
+          'loading'
+        ? 'LOADING ISS'
+        : 'FALLBACK ISS';
+
+  return (
+    <section className="globe-panel">
+      <div
+        ref={containerRef}
+        className="globe-viewport"
+      >
+        <Globe
+          ref={globeRef}
+
+          width={
+            dimensions.width
+          }
+
+          height={
+            dimensions.height
+          }
+
+          backgroundColor="rgba(0,0,0,0)"
+
+          backgroundImageUrl="https://unpkg.com/three-globe/example/img/night-sky.png"
+
+          globeImageUrl="https://unpkg.com/three-globe/example/img/earth-night.jpg"
+
+          bumpImageUrl="https://unpkg.com/three-globe/example/img/earth-topology.png"
+
+          showAtmosphere
+
+          atmosphereColor="#72DBE7"
+
+          atmosphereAltitude={
+            0.15
+          }
+
+          showGraticules
+
+          pointsData={
+            stationPoints
+          }
+
+          pointLat="lat"
+          pointLng="lng"
+          pointAltitude="altitude"
+          pointRadius="radius"
+          pointColor="color"
+
+          pointLabel={(
+            point,
+          ) => {
+            const item =
+              point as GroundPoint;
+
+            return `
+              <div class="globe-tooltip">
+                ${item.label}
+              </div>
+            `;
+          }}
+
+          objectsData={
+            issObjects
+          }
+
+          objectLat="lat"
+          objectLng="lng"
+          objectAltitude="altitude"
+          objectRotation="rotation"
+
+          objectThreeObject={
+            createIssObject
+          }
+
+          objectLabel={(
+            object,
+          ) => {
+            const item =
+              object as IssObjectData;
+
+            return `
+              <div class="globe-tooltip">
+                <strong>
+                  ${item.label}
+                </strong>
+                <br />
+                Orbit: ~${ISS_ALTITUDE_KM} km
+                <br />
+                ${item.lat.toFixed(2)}Â°,
+                ${item.lng.toFixed(2)}Â°
+              </div>
+            `;
+          }}
+
+          pathsData={
+            orbitPaths
+          }
+
+          pathPoints="points"
+          pathPointLat="lat"
+          pathPointLng="lng"
+          pathPointAlt="altitude"
+          pathColor="color"
+          pathStroke="stroke"
+          pathDashLength="dashLength"
+          pathDashGap="dashGap"
+          pathDashAnimateTime="dashAnimateTime"
+          pathResolution={1}
+          pathLabel="label"
+
+          arcsData={
+            signalArcs
+          }
+
+          arcStartLat="startLat"
+          arcStartLng="startLng"
+          arcStartAltitude="startAltitude"
+          arcEndLat="endLat"
+          arcEndLng="endLng"
+          arcEndAltitude="endAltitude"
+          arcAltitude="maxAltitude"
+          arcColor="color"
+          arcStroke="stroke"
+          arcDashLength="dashLength"
+          arcDashGap="dashGap"
+          arcDashAnimateTime="dashAnimateTime"
+        />
+
+        <div className="globe-distance">
+          <span>
+            MODEL DISTANCE
+          </span>
+
+          <strong>
+            {inputs.finalDistance.toLocaleString()}
+            {' '}
+            km
+          </strong>
+        </div>
+
+        <div className="globe-model-status">
+          <span className="status-dot status-dot--cyan" />
+
+          {modelLabel}
+        </div>
+
+        <div className="globe-hud globe-hud--satellite">
+          <div className="globe-hud__icon">
+            <Satellite
+              size={17}
+            />
+          </div>
+
+          <div>
+            <span>
+              ISS
+            </span>
+
+            <strong>
+              ~420 km orbit
+            </strong>
+          </div>
+        </div>
+
+        <div className="globe-hud globe-hud--station">
+          <div className="globe-hud__icon globe-hud__icon--station">
+            <RadioTower
+              size={16}
+            />
+          </div>
+
+          <div>
+            <span>
+              GROUND STATION
+            </span>
+
+            <strong>
+              SÃ£o LuÃ­s Â· MA
+            </strong>
+          </div>
+        </div>
+
+        <div className="globe-scale">
+          NASA ISS
+          <span />
+          DRAG Â· ROTATE Â· ZOOM
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default GlobeScene;
+
+============================================================
+ARQUIVO: C:\projetos\satellite-signal-edo-simulator\src\components\model\ModelView.tsx
+============================================================
+
+import {
+  ArrowRight,
+  CheckCircle2,
+  Orbit,
+  RadioTower,
+  Satellite,
+  Sigma,
+} from 'lucide-react';
+
+import type {
+  SimulationInputs,
+} from '../../types/simulation';
+
+import './ModelView.css';
+
+interface ModelViewProps {
+  inputs: SimulationInputs;
+  receivedPower: number;
+}
+
+function ModelView({
+  inputs,
+  receivedPower,
+}: ModelViewProps) {
+  const {
+    initialPower,
+    referenceDistance,
+    finalDistance,
+    attenuationCoefficient,
+  } = inputs;
+
+  return (
+    <section className="model-view">
+      <div className="model-view__hero">
+        <div>
+          <span className="model-view__eyebrow">
+            MATHEMATICAL MODEL
+          </span>
+
+          <h1>
+            Homogeneous First-Order
+            Differential Equation
+          </h1>
+
+          <p>
+            Modeling the variation of
+            communication signal power as
+            a function of distance.
+          </p>
+        </div>
+
+        <div className="model-view__badge">
+          <Orbit size={18} />
+          EDO HOMOGÃŠNEA
+        </div>
+      </div>
+
+      <div className="model-view__grid">
+        <article className="model-card model-card--scenario">
+          <div className="model-card__heading">
+            <span>
+              01 Â· PHYSICAL PROBLEM
+            </span>
+
+            <h2>
+              Orbital Communication
+            </h2>
+          </div>
+
+          <div className="scenario-diagram">
+            <div className="scenario-object">
+              <div className="scenario-object__icon">
+                <Satellite size={34} />
+              </div>
+
+              <strong>
+                ISS
+              </strong>
+
+              <span>
+                Orbital transmitter
+              </span>
+            </div>
+
+            <div className="scenario-link">
+              <div className="scenario-link__line" />
+
+              <span>
+                signal Â· distance r
+              </span>
+            </div>
+
+            <div className="scenario-object">
+              <div className="scenario-object__icon scenario-object__icon--station">
+                <RadioTower size={34} />
+              </div>
+
+              <strong>
+                Ground Station
+              </strong>
+
+              <span>
+                Signal receiver
+              </span>
+            </div>
+          </div>
+
+          <p className="model-card__text">
+            As the communication signal
+            propagates over distance, its
+            received power decreases. Our
+            objective is to model this variation
+            mathematically.
+          </p>
+
+          <div className="model-question">
+            <span>
+              PROBLEM
+            </span>
+
+            <strong>
+              How does the received signal power
+              vary as the distance between the
+              orbital object and the receiver
+              increases?
+            </strong>
+          </div>
+        </article>
+
+        <article className="model-card model-card--equation">
+          <div className="model-card__heading">
+            <span>
+              02 Â· DIFFERENTIAL EQUATION
+            </span>
+
+            <h2>
+              Proposed Model
+            </h2>
+          </div>
+
+          <div className="equation-display equation-display--primary">
+            <span className="equation-fraction">
+              <span>dP</span>
+              <span>dr</span>
+            </span>
+
+            <span>=</span>
+
+            <span>âˆ’k</span>
+
+            <span className="equation-fraction">
+              <span>P</span>
+              <span>r</span>
+            </span>
+          </div>
+
+          <div className="equation-meaning">
+            <div>
+              <strong>
+                P
+              </strong>
+
+              <span>
+                signal power
+              </span>
+            </div>
+
+            <div>
+              <strong>
+                r
+              </strong>
+
+              <span>
+                propagation distance
+              </span>
+            </div>
+
+            <div>
+              <strong>
+                k
+              </strong>
+
+              <span>
+                attenuation coefficient
+              </span>
+            </div>
+
+            <div>
+              <strong>
+                dP/dr
+              </strong>
+
+              <span>
+                rate of signal variation
+              </span>
+            </div>
+          </div>
+
+          <div className="homogeneous-proof">
+            <CheckCircle2 size={17} />
+
+            <div>
+              <span>
+                WHY HOMOGENEOUS?
+              </span>
+
+              <strong>
+                The right-hand side depends only
+                on the ratio P/r.
+              </strong>
+            </div>
+          </div>
+
+          <div className="equation-display equation-display--secondary">
+            <span>
+              dP/dr
+            </span>
+
+            <span>=</span>
+
+            <span>
+              F(P/r)
+            </span>
+          </div>
+        </article>
+      </div>
+
+      <article className="model-card model-card--derivation">
+        <div className="model-card__heading">
+          <span>
+            03 Â· ANALYTICAL SOLUTION
+          </span>
+
+          <h2>
+            Homogeneous Substitution
+          </h2>
+        </div>
+
+        <div className="derivation-flow">
+          <div className="derivation-step">
+            <span className="derivation-step__number">
+              1
+            </span>
+
+            <div>
+              <span className="derivation-step__label">
+                SUBSTITUTION
+              </span>
+
+              <div className="derivation-equation">
+                P = vr
+              </div>
+            </div>
+          </div>
+
+          <ArrowRight
+            className="derivation-arrow"
+            size={18}
+          />
+
+          <div className="derivation-step">
+            <span className="derivation-step__number">
+              2
+            </span>
+
+            <div>
+              <span className="derivation-step__label">
+                DERIVATIVE
+              </span>
+
+              <div className="derivation-equation">
+                dP/dr = v + r(dv/dr)
+              </div>
+            </div>
+          </div>
+
+          <ArrowRight
+            className="derivation-arrow"
+            size={18}
+          />
+
+          <div className="derivation-step">
+            <span className="derivation-step__number">
+              3
+            </span>
+
+            <div>
+              <span className="derivation-step__label">
+                SUBSTITUTE
+              </span>
+
+              <div className="derivation-equation">
+                v + r(dv/dr) = âˆ’kv
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="derivation-details">
+          <div className="derivation-line">
+            <span>
+              Rearranging
+            </span>
+
+            <strong>
+              r(dv/dr) = âˆ’(k + 1)v
+            </strong>
+          </div>
+
+          <div className="derivation-line">
+            <span>
+              Separating variables
+            </span>
+
+            <strong>
+              dv/v = âˆ’(k + 1) dr/r
+            </strong>
+          </div>
+
+          <div className="derivation-line">
+            <span>
+              Integration
+            </span>
+
+            <strong>
+              ln|v| = âˆ’(k + 1)ln|r| + C
+            </strong>
+          </div>
+
+          <div className="derivation-line">
+            <span>
+              Isolating v
+            </span>
+
+            <strong>
+              v = C r<sup>âˆ’(k + 1)</sup>
+            </strong>
+          </div>
+
+          <div className="derivation-line">
+            <span>
+              Since P = vr
+            </span>
+
+            <strong>
+              P = C r<sup>âˆ’k</sup>
+            </strong>
+          </div>
+        </div>
+
+        <div className="final-solution">
+          <div>
+            <span>
+              USING P(râ‚€) = Pâ‚€
+            </span>
+
+            <h3>
+              Final analytical solution
+            </h3>
+          </div>
+
+          <div className="final-solution__equation">
+            P(r) = Pâ‚€
+            <span>
+              (
+              <span className="equation-fraction equation-fraction--inline">
+                <span>râ‚€</span>
+                <span>r</span>
+              </span>
+              )
+              <sup>k</sup>
+            </span>
+          </div>
+        </div>
+      </article>
+
+      <div className="model-view__bottom">
+        <article className="model-card model-card--numeric">
+          <div className="model-card__heading">
+            <span>
+              04 Â· CURRENT EXAMPLE
+            </span>
+
+            <h2>
+              Applied Parameters
+            </h2>
+          </div>
+
+          <div className="numeric-parameters">
+            <div>
+              <span>
+                Pâ‚€
+              </span>
+
+              <strong>
+                {initialPower} W
+              </strong>
+            </div>
+
+            <div>
+              <span>
+                râ‚€
+              </span>
+
+              <strong>
+                {referenceDistance} km
+              </strong>
+            </div>
+
+            <div>
+              <span>
+                r
+              </span>
+
+              <strong>
+                {finalDistance} km
+              </strong>
+            </div>
+
+            <div>
+              <span>
+                k
+              </span>
+
+              <strong>
+                {attenuationCoefficient}
+              </strong>
+            </div>
+          </div>
+
+          <div className="numeric-calculation">
+            <span>
+              Applying the model:
+            </span>
+
+            <strong>
+              P({finalDistance}) =
+              {' '}
+              {initialPower}
+              {' '}
+              (
+              {referenceDistance}
+              /
+              {finalDistance}
+              )
+              <sup>
+                {attenuationCoefficient}
+              </sup>
+            </strong>
+          </div>
+
+          <div className="numeric-result">
+            <RadioTower size={18} />
+
+            <div>
+              <span>
+                RECEIVED POWER
+              </span>
+
+              <strong>
+                {receivedPower.toFixed(4)}
+                {' '}
+                W
+              </strong>
+            </div>
+          </div>
+        </article>
+
+        <article className="model-card model-card--rk4">
+          <div className="model-card__heading">
+            <span>
+              05 Â· NUMERICAL METHOD
+            </span>
+
+            <h2>
+              Runge-Kutta 4th Order
+            </h2>
+          </div>
+
+          <div className="rk4-icon">
+            <Sigma size={34} />
+          </div>
+
+          <p className="model-card__text">
+            The analytical result is compared
+            with a fourth-order Runge-Kutta
+            numerical approximation implemented
+            directly in the application.
+          </p>
+
+          <div className="rk4-formula">
+            Pâ‚™â‚Šâ‚ = Pâ‚™ +
+            {' '}
+            <span className="equation-fraction equation-fraction--inline">
+              <span>h</span>
+              <span>6</span>
+            </span>
+
+            (kâ‚ + 2kâ‚‚ + 2kâ‚ƒ + kâ‚„)
+          </div>
+
+          <div className="rk4-footer">
+            ANALYTICAL Ã— NUMERICAL
+            {' '}
+            â†’ comparison in the 3D graph
+          </div>
+        </article>
+      </div>
+    </section>
+  );
+}
+
+export default ModelView;

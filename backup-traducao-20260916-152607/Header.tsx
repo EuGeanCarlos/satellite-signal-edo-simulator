@@ -27,30 +27,18 @@ interface HeaderProps {
   onToggleTheme: () => void;
 }
 
-const navigation: {
-  value: AppSection;
-  label: string;
-}[] = [
-  {
-    value: 'Overview',
-    label: 'VISÃO GERAL',
-  },
-  {
-    value: 'Model',
-    label: 'MODELO',
-  },
-  {
-    value: 'Simulation',
-    label: 'SIMULAÇÃO',
-  },
-];
-
 function Header({
   activeSection,
   theme,
   onSectionChange,
   onToggleTheme,
 }: HeaderProps) {
+  const navigation: AppSection[] = [
+    'Overview',
+    'Model',
+    'Simulation',
+  ];
+
   return (
     <header className="topbar">
       <div className="brand">
@@ -71,35 +59,32 @@ function Header({
           </div>
 
           <div className="brand__subtitle">
-            Controle de Missão com
-            Equações Diferenciais
+            Differential Equation
+            Mission Control
           </div>
         </div>
       </div>
 
       <nav
         className="topbar__navigation"
-        aria-label="Navegação principal"
+        aria-label="Main navigation"
       >
         {navigation.map(
-          ({
-            value,
-            label,
-          }) => {
+          (item) => {
             const isActive =
-              activeSection === value;
+              activeSection === item;
 
             const isDisabled =
-              value === 'Simulation';
+              item === 'Simulation';
 
             return (
               <button
                 type="button"
-                key={value}
+                key={item}
                 disabled={isDisabled}
                 title={
                   isDisabled
-                    ? 'O ambiente de simulação será adicionado na próxima etapa'
+                    ? 'Simulation workspace will be added next'
                     : undefined
                 }
                 className={
@@ -110,12 +95,12 @@ function Header({
                 onClick={() => {
                   if (!isDisabled) {
                     onSectionChange(
-                      value,
+                      item,
                     );
                   }
                 }}
               >
-                {label}
+                {item}
               </button>
             );
           },
@@ -132,7 +117,7 @@ function Header({
 
           <div>
             <span className="system-status__label">
-              SISTEMA
+              SYSTEM
             </span>
 
             <span className="system-status__value">
@@ -153,10 +138,10 @@ function Header({
           onClick={onToggleTheme}
           title={
             theme === 'dark'
-              ? 'Alternar para tema claro'
-              : 'Alternar para tema escuro'
+              ? 'Switch to light theme'
+              : 'Switch to dark theme'
           }
-          aria-label="Alternar tema de cores"
+          aria-label="Toggle color theme"
         >
           {theme === 'dark'
             ? (

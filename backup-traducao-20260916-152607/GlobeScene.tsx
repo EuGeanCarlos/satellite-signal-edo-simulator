@@ -494,7 +494,7 @@ function GlobeScene({
         }
 
         console.error(
-          'Falha ao carregar o modelo da ISS:',
+          'Failed to load ISS model:',
           error,
         );
 
@@ -626,7 +626,7 @@ function GlobeScene({
             '#F0C56E',
 
           label:
-            'Estação Terrestre · São Luís',
+            'Ground Station · São Luís',
         },
       ],
       [],
@@ -648,7 +648,7 @@ function GlobeScene({
             ISS_ALTITUDE,
 
           label:
-            'Estação Espacial Internacional',
+            'International Space Station',
 
           rotation: {
             x: 0,
@@ -726,7 +726,7 @@ function GlobeScene({
               : 0,
 
           label:
-            'Órbita ilustrativa da ISS',
+            'Illustrative ISS orbit',
         },
       ];
     }, [
@@ -928,11 +928,11 @@ function GlobeScene({
   const modelLabel =
     modelStatus ===
     'ready'
-      ? 'ISS NASA 3D'
+      ? 'NASA ISS 3D'
       : modelStatus ===
           'loading'
-        ? 'CARREGANDO ISS'
-        : 'ISS ALTERNATIVA';
+        ? 'LOADING ISS'
+        : 'FALLBACK ISS';
 
   return (
     <section className="globe-panel">
@@ -1017,7 +1017,7 @@ function GlobeScene({
                   ${item.label}
                 </strong>
                 <br />
-                Órbita: ~${ISS_ALTITUDE_KM} km
+                Orbit: ~${ISS_ALTITUDE_KM} km
                 <br />
                 ${item.lat.toFixed(2)}°,
                 ${item.lng.toFixed(2)}°
@@ -1061,7 +1061,7 @@ function GlobeScene({
 
         <div className="globe-distance">
           <span>
-            DISTÂNCIA DO MODELO
+            MODEL DISTANCE
           </span>
 
           <strong>
@@ -1090,7 +1090,7 @@ function GlobeScene({
             </span>
 
             <strong>
-              órbita ~420 km
+              ~420 km orbit
             </strong>
           </div>
         </div>
@@ -1104,7 +1104,7 @@ function GlobeScene({
 
           <div>
             <span>
-              ESTAÇÃO TERRESTRE
+              GROUND STATION
             </span>
 
             <strong>
@@ -1114,9 +1114,9 @@ function GlobeScene({
         </div>
 
         <div className="globe-scale">
-          ISS NASA
+          NASA ISS
           <span />
-          ARRASTE · GIRE · ZOOM
+          DRAG · ROTATE · ZOOM
         </div>
       </div>
     </section>

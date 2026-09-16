@@ -10,12 +10,6 @@ import type {
   SimulationInputs,
 } from '../../types/simulation';
 
-type SignalQuality =
-  | 'STRONG'
-  | 'MODERATE'
-  | 'WEAK'
-  | 'CRITICAL';
-
 interface SatelliteTelemetryProps {
   inputs: SimulationInputs;
 
@@ -50,8 +44,7 @@ function SatelliteTelemetry({
       ),
     );
 
-  const quality:
-    SignalQuality =
+  const quality =
     normalizedStrength >= 0.5
       ? 'STRONG'
       : normalizedStrength >= 0.2
@@ -63,34 +56,16 @@ function SatelliteTelemetry({
   const qualityClass =
     quality.toLowerCase();
 
-  const qualityLabels:
-    Record<
-      SignalQuality,
-      string
-    > = {
-      STRONG:
-        'FORTE',
-
-      MODERATE:
-        'MODERADO',
-
-      WEAK:
-        'FRACO',
-
-      CRITICAL:
-        'CRÍTICO',
-    };
-
   return (
     <aside className="panel telemetry-panel">
       <div className="panel__heading">
         <div>
           <span className="panel__eyebrow">
-            OBJETO ORBITAL
+            ORBITAL OBJECT
           </span>
 
           <h2>
-            Status da ISS
+            ISS Status
           </h2>
         </div>
 
@@ -114,7 +89,7 @@ function SatelliteTelemetry({
           </span>
 
           <strong>
-            Estação Espacial Internacional
+            International Space Station
           </strong>
         </div>
       </div>
@@ -129,24 +104,20 @@ function SatelliteTelemetry({
         />
 
         {simulationActive
-          ? 'ENLACE ATIVO'
-          : 'EM ESPERA'}
+          ? 'LINK ACTIVE'
+          : 'STANDBY'}
       </div>
 
       <div className="signal-quality">
         <div className="signal-quality__header">
           <span>
-            SINAL
+            SIGNAL
           </span>
 
           <strong
             className={`signal-quality__value signal-quality__value--${qualityClass}`}
           >
-            {
-              qualityLabels[
-                quality
-              ]
-            }
+            {quality}
           </strong>
         </div>
 
@@ -185,7 +156,7 @@ function SatelliteTelemetry({
 
           <div>
             <span>
-              Distância do modelo
+              Model distance
             </span>
 
             <strong>
@@ -205,7 +176,7 @@ function SatelliteTelemetry({
 
           <div>
             <span>
-              Potência recebida
+              Received power
             </span>
 
             <strong>
@@ -227,7 +198,7 @@ function SatelliteTelemetry({
 
           <div>
             <span>
-              Atenuação
+              Attenuation
             </span>
 
             <strong>
@@ -248,7 +219,7 @@ function SatelliteTelemetry({
 
           <div>
             <span>
-              Erro RK4
+              RK4 error
             </span>
 
             <strong>
@@ -263,7 +234,7 @@ function SatelliteTelemetry({
 
       <div className="telemetry-panel__footer">
         <span>
-          DERIVADA
+          DERIVATIVE
         </span>
 
         <strong>

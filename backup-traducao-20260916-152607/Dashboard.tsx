@@ -52,12 +52,6 @@ type ThemeMode =
   | 'dark'
   | 'light';
 
-type SignalLevel =
-  | 'STRONG'
-  | 'MODERATE'
-  | 'WEAK'
-  | 'CRITICAL';
-
 interface DashboardProps {
   inputs:
     SimulationInputs;
@@ -217,8 +211,7 @@ function Dashboard({
       ],
     );
 
-  const signalLevel:
-    SignalLevel =
+  const signalLabel =
     signalStrength >= 0.5
       ? 'STRONG'
       : signalStrength >= 0.2
@@ -226,29 +219,6 @@ function Dashboard({
         : signalStrength >= 0.05
           ? 'WEAK'
           : 'CRITICAL';
-
-  const signalLabels:
-    Record<
-      SignalLevel,
-      string
-    > = {
-      STRONG:
-        'FORTE',
-
-      MODERATE:
-        'MODERADO',
-
-      WEAK:
-        'FRACO',
-
-      CRITICAL:
-        'CRÍTICO',
-    };
-
-  const signalLabel =
-    signalLabels[
-      signalLevel
-    ];
 
   function handleSimulate() {
     setSimulationActive(
@@ -341,16 +311,20 @@ function Dashboard({
                     simulationActive
                   }
                   receivedPower={
-                    simulation.analyticalPower
+                    simulation
+                      .analyticalPower
                   }
                   attenuationPercent={
-                    simulation.attenuationPercent
+                    simulation
+                      .attenuationPercent
                   }
                   derivative={
-                    simulation.derivative
+                    simulation
+                      .derivative
                   }
                   relativeErrorPercent={
-                    simulation.relativeErrorPercent
+                    simulation
+                      .relativeErrorPercent
                   }
                 />
               </div>
@@ -360,7 +334,7 @@ function Dashboard({
                   <div className="dock-object__top">
                     <div>
                       <span className="panel__eyebrow">
-                        OBJETO ORBITAL
+                        ORBITAL OBJECT
                       </span>
 
                       <strong>
@@ -388,7 +362,7 @@ function Dashboard({
                       src={
                         ISS_IMAGE_PATH
                       }
-                      alt="Estação Espacial Internacional"
+                      alt="International Space Station"
                       style={{
                         position:
                           'absolute',
@@ -470,14 +444,14 @@ function Dashboard({
                         className="status-dot status-dot--cyan"
                       />
 
-                      ISS NASA
+                      NASA ISS
                     </div>
                   </div>
 
                   <div className="dock-object__stats">
                     <div>
                       <span>
-                        ÓRBITA
+                        ORBIT
                       </span>
 
                       <strong>
@@ -487,11 +461,11 @@ function Dashboard({
 
                     <div>
                       <span>
-                        SINAL
+                        SIGNAL
                       </span>
 
                       <strong
-                        className={`dock-signal dock-signal--${signalLevel.toLowerCase()}`}
+                        className={`dock-signal dock-signal--${signalLabel.toLowerCase()}`}
                       >
                         {signalLabel}
                       </strong>
@@ -503,24 +477,24 @@ function Dashboard({
                   <div className="section-heading">
                     <div>
                       <span className="panel__eyebrow">
-                        SIMULAÇÃO
+                        SIMULATION
                       </span>
 
                       <h2>
-                        Resultados da EDO
+                        EDO Results
                       </h2>
                     </div>
 
                     <span className="section-heading__status">
                       {simulationActive
-                        ? 'ATIVO'
-                        : 'PRÉVIA'}
+                        ? 'LIVE'
+                        : 'PREVIEW'}
                     </span>
                   </div>
 
                   <div className="metrics-grid">
                     <MetricCard
-                      label="POTÊNCIA"
+                      label="POWER"
                       value={
                         simulation
                           .analyticalPower
@@ -529,16 +503,18 @@ function Dashboard({
                           )
                       }
                       unit="W"
-                      description="Potência recebida P(r)"
+                      description="Received P(r)"
                       icon={
                         <Radio
-                          size={15}
+                          size={
+                            15
+                          }
                         />
                       }
                     />
 
                     <MetricCard
-                      label="PERDA"
+                      label="LOSS"
                       value={
                         simulation
                           .attenuationPercent
@@ -547,10 +523,12 @@ function Dashboard({
                           )
                       }
                       unit="%"
-                      description="Atenuação do sinal"
+                      description="Attenuation"
                       icon={
                         <TrendingDown
-                          size={15}
+                          size={
+                            15
+                          }
                         />
                       }
                       accent="amber"
@@ -565,17 +543,19 @@ function Dashboard({
                             2,
                           )
                       }
-                      description="Variação do sinal"
+                      description="Signal variation"
                       icon={
                         <Activity
-                          size={15}
+                          size={
+                            15
+                          }
                         />
                       }
                       accent="blue"
                     />
 
                     <MetricCard
-                      label="ERRO RK4"
+                      label="RK4 ERROR"
                       value={
                         simulation
                           .relativeErrorPercent
@@ -584,10 +564,12 @@ function Dashboard({
                           )
                       }
                       unit="%"
-                      description="Erro numérico"
+                      description="Numerical error"
                       icon={
                         <Sigma
-                          size={15}
+                          size={
+                            15
+                          }
                         />
                       }
                     />

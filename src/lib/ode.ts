@@ -28,7 +28,9 @@ export function sanitizeSimulationInputs(
       : referenceDistance;
 
   const attenuationCoefficient =
-    Number.isFinite(inputs.attenuationCoefficient) &&
+    Number.isFinite(
+      inputs.attenuationCoefficient,
+    ) &&
     inputs.attenuationCoefficient >= 0
       ? inputs.attenuationCoefficient
       : 0;
@@ -55,10 +57,11 @@ export function analyticalPower(
   const safeInputs =
     sanitizeSimulationInputs(inputs);
 
-  const safeDistance = Math.max(
-    Math.abs(distance),
-    EPSILON,
-  );
+  const safeDistance =
+    Math.max(
+      Math.abs(distance),
+      EPSILON,
+    );
 
   const {
     initialPower,
@@ -69,7 +72,8 @@ export function analyticalPower(
   return (
     initialPower *
     Math.pow(
-      referenceDistance / safeDistance,
+      referenceDistance /
+        safeDistance,
       attenuationCoefficient,
     )
   );
@@ -81,13 +85,17 @@ export function signalDerivative(
   attenuationCoefficient: number,
 ): number {
   const safeDistance =
-    Math.abs(distance) < EPSILON
+    Math.abs(distance) <
+    EPSILON
       ? EPSILON
       : distance;
 
   return (
     -attenuationCoefficient *
-    (power / safeDistance)
+    (
+      power /
+      safeDistance
+    )
   );
 }
 
@@ -96,14 +104,20 @@ export function attenuationPercent(
   receivedPower: number,
 ): number {
   if (
-    !Number.isFinite(initialPower) ||
+    !Number.isFinite(
+      initialPower,
+    ) ||
     initialPower <= 0
   ) {
     return 0;
   }
 
   return (
-    (1 - receivedPower / initialPower) *
+    (
+      1 -
+      receivedPower /
+        initialPower
+    ) *
     100
   );
 }
@@ -120,50 +134,78 @@ export function createDistanceGrid(
     return [];
   }
 
-  if (Math.abs(end - start) < EPSILON) {
-    return [start];
+  if (
+    Math.abs(
+      end - start,
+    ) <
+    EPSILON
+  ) {
+    return [
+      start,
+    ];
   }
 
-  const direction =
-    end > start ? 1 : -1;
-
   const totalDistance =
-    Math.abs(end - start);
+    Math.abs(
+      end - start,
+    );
 
   const safeRequestedStep =
-    Number.isFinite(requestedStep) &&
+    Number.isFinite(
+      requestedStep,
+    ) &&
     requestedStep > 0
       ? requestedStep
-      : totalDistance / 100;
+      : totalDistance /
+        100;
 
   const minimumStep =
-    totalDistance / MAX_POINTS;
+    totalDistance /
+    MAX_POINTS;
 
-  const effectiveStep = Math.max(
-    safeRequestedStep,
-    minimumStep,
-  );
+  const effectiveStep =
+    Math.max(
+      safeRequestedStep,
+      minimumStep,
+    );
 
-  const intervalCount = Math.max(
-    1,
-    Math.ceil(
-      totalDistance / effectiveStep,
-    ),
-  );
+  const intervalCount =
+    Math.max(
+      1,
+      Math.ceil(
+        totalDistance /
+          effectiveStep,
+      ),
+    );
 
   const actualStep =
-    (end - start) / intervalCount;
+    (
+      end -
+      start
+    ) /
+    intervalCount;
 
   const distances =
     Array.from(
       {
-        length: intervalCount + 1,
+        length:
+          intervalCount +
+          1,
       },
-      (_, index) =>
-        start + actualStep * index,
+
+      (
+        _,
+        index,
+      ) =>
+        start +
+        actualStep *
+          index,
     );
 
-  distances[distances.length - 1] = end;
+  distances[
+    distances.length -
+      1
+  ] = end;
 
   return distances;
 }
@@ -172,31 +214,39 @@ export function generateAnalyticalSolution(
   inputs: SimulationInputs,
 ): SimulationPoint[] {
   const safeInputs =
-    sanitizeSimulationInputs(inputs);
-
-  const distances = createDistanceGrid(
-    safeInputs.referenceDistance,
-    safeInputs.finalDistance,
-    safeInputs.numericalStep,
-  );
-
-  return distances.map((distance) => {
-    const power = analyticalPower(
-      distance,
-      safeInputs,
+    sanitizeSimulationInputs(
+      inputs,
     );
 
-    const derivative =
-      signalDerivative(
+  const distances =
+    createDistanceGrid(
+      safeInputs.referenceDistance,
+      safeInputs.finalDistance,
+      safeInputs.numericalStep,
+    );
+
+  return distances.map(
+    (
+      distance,
+    ) => {
+      const power =
+        analyticalPower(
+          distance,
+          safeInputs,
+        );
+
+      const derivative =
+        signalDerivative(
+          distance,
+          power,
+          safeInputs.attenuationCoefficient,
+        );
+
+      return {
         distance,
         power,
-        safeInputs.attenuationCoefficient,
-      );
-
-    return {
-      distance,
-      power,
-      derivative,
-    };
-  });
+        derivative,
+      };
+    },
+  );
 }

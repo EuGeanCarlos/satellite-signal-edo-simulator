@@ -94,11 +94,11 @@ function ControlPanel({
       <div className="panel__heading">
         <div>
           <span className="panel__eyebrow">
-            SIMULAÇÃO
+            SIMULATION
           </span>
 
           <h2>
-            Parâmetros do Modelo
+            Model Parameters
           </h2>
         </div>
 
@@ -110,7 +110,7 @@ function ControlPanel({
 
       <div className="control-panel__fields">
         <NumberField
-          label="Potência"
+          label="Power"
           symbol="P₀"
           unit="W"
           value={
@@ -129,7 +129,7 @@ function ControlPanel({
         />
 
         <NumberField
-          label="Referência"
+          label="Reference"
           symbol="r₀"
           unit="km"
           value={
@@ -148,7 +148,7 @@ function ControlPanel({
         />
 
         <NumberField
-          label="Distância"
+          label="Distance"
           symbol="r"
           unit="km"
           value={
@@ -167,7 +167,7 @@ function ControlPanel({
         />
 
         <NumberField
-          label="Coeficiente"
+          label="Coefficient"
           symbol="k"
           value={
             inputs.attenuationCoefficient
@@ -185,7 +185,7 @@ function ControlPanel({
         />
 
         <NumberField
-          label="Passo RK4"
+          label="RK4 step"
           symbol="Δr"
           unit="km"
           value={
@@ -215,15 +215,14 @@ function ControlPanel({
             fill="currentColor"
           />
 
-          SIMULAR
+          Simulate
         </button>
 
         <button
           className="button button--ghost"
           type="button"
           onClick={onReset}
-          title="Redefinir parâmetros"
-          aria-label="Redefinir parâmetros"
+          title="Reset parameters"
         >
           <RotateCcw
             size={15}
