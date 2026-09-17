@@ -1,12 +1,15 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
-function getBasePath(): string {
+function resolveBasePath(): string {
   const repository =
     process.env.GITHUB_REPOSITORY;
 
+  const isGitHubActions =
+    process.env.GITHUB_ACTIONS === 'true';
+
   if (
-    process.env.GITHUB_ACTIONS === 'true' &&
+    isGitHubActions &&
     repository
   ) {
     const repositoryName =
@@ -24,5 +27,5 @@ export default defineConfig({
   ],
 
   base:
-    getBasePath(),
+    resolveBasePath(),
 });
